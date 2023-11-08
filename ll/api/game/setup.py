@@ -3,6 +3,7 @@ from .resources import GameState
 
 def setup_game_states(app):
     """Set up the game states."""
+    app["game_states"] = {}
 
     # Just create a single game state for now
     game_state = GameState(
@@ -14,4 +15,4 @@ def setup_game_states(app):
         players=[],
     )
 
-    app["game_states"] = [game_state]
+    app["game_states"][id] = [game_state]

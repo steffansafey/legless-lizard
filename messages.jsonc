@@ -1,0 +1,69 @@
+
+// Open websocket connection to ws://localhost:8080?gameId=1
+
+
+// Join message (sent by client)
+{
+    "type": "join_request",
+    "payload": {
+        "name": "player1",
+        "color": [
+            255,
+            0,
+            0
+        ]
+    }
+}
+
+
+// Join Response (sent by server)
+{
+    "type": "join_accepted",
+    "payload": {
+        "playerId": "a080e1eb-e458-4582-9e58-f626146b368e",
+    }
+}
+
+
+// State message (sent by server)
+{
+    "type": "state_update",
+    "payload": {
+        "players": [
+            {
+                "id": "a080e1eb-e458-4582-9e58-f626146b368e",
+                "name": "player1",
+                "steps": [
+                    [
+                        300,
+                        400
+                    ],
+                    [
+                        310,
+                        410
+                    ]
+                ],
+                "stepSize": 10,
+                "color": [
+                    255,
+                    0,
+                    0
+                ]
+            }
+        ],
+        "tick": 1000,
+        "nextTickTime": 1234567890,
+        "timestamp": 1234567890
+    }
+}
+
+
+// Update message (sent by client)
+{
+    "type": "client_update",
+    "payload": {
+        "playerId": "a080e1eb-e458-4582-9e58-f626146b368e",
+        "stepAngle": 3.0,
+        "tick": 1000,
+    }
+}

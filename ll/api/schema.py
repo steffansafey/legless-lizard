@@ -2,6 +2,7 @@ import datetime
 from base64 import urlsafe_b64decode, urlsafe_b64encode
 
 from marshmallow import Schema, fields, post_dump, post_load
+from marshmallow.utils import EXCLUDE
 from marshmallow_enum import EnumField as MarshmallowEnumField
 
 
@@ -80,7 +81,7 @@ class BaseSchema(Schema):
                 field.data_key = snake_to_camel(field_name)
 
     class Meta:
-        unknown = "EXCLUDE"
+        unknown = EXCLUDE
 
 
 class UpdateSchemaMixin:

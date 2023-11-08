@@ -1,9 +1,7 @@
 import asyncio
 
 from aiohttp import web
-
-# from aiohttp_apispec import setup_aiohttp_apispec as _setup_aiohttp_apispec
-from aiohttp_apispec import validation_middleware
+from aiohttp_apispec import setup_aiohttp_apispec, validation_middleware
 from aiohttp_middlewares import cors_middleware
 
 from ll.logger import setup_logging
@@ -16,6 +14,7 @@ from .handlers.game import setup_api_routes
 from .healthcheck import setup_healthcheck_routes
 from .middlewares import http_error_middleware
 from .settings import Settings
+from .ws import cleanup_ws_app, setup_ws_app
 
 
 def setup_settings(_app):
@@ -30,7 +29,7 @@ def app_factory():
     setup_logging(_app["SETTINGS"].LOG_LEVEL)
 
     # Schemas
-    # _setup_aiohttp_apispec(app=_app, **_get_swagger_config(_app))
+    setup_aiohttp_apispec(app=_app, **_get_swagger_config(_app))
     _app.middlewares.extend([http_error_middleware, validation_middleware])
 
     # Handlers
@@ -39,10 +38,12 @@ def app_factory():
     setup_game_states(_app)
 
     # Start up
-    _app.on_startup.extend([create_connection_pool, create_event_loop_and_game_task])
+    _app.on_startup.extend(
+        [create_connection_pool, setup_ws_app, create_event_loop_and_game_task]
+    )
 
     # Clean up
-    _app.on_cleanup.extend([close_connection_pool, close_event_loop])
+    _app.on_cleanup.extend([close_connection_pool, cleanup_ws_app, close_event_loop])
 
     return _app
 
@@ -72,15 +73,11 @@ def _get_swagger_config(_app):
 
     We only publish our Swagger dogs for development builds.
     """
-    return (
-        {
-            "url": "/legless-lizard/docs/swagger.json",
-            "swagger_path": "/legless-lizard/docs/",
-            "static_path": "/legless-lizard/swagger",
-        }
-        if _app["SETTINGS"].API_DOCS
-        else {}
-    )
+    return {
+        "url": "/legless-lizard/docs/swagger.json",
+        "swagger_path": "/legless-lizard/docs/",
+        "static_path": "/legless-lizard/swagger",
+    }
 
 
 async def create_app():
