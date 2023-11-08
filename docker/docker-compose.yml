@@ -1,0 +1,53 @@
+version: "3.7"
+
+x-postgres-env-vars:  &postgres-env-vars
+  POSTGRES_DB: ${POSTGRES_DB:-ll}
+  POSTGRES_USER: ${POSTGRES_USER:-ll}
+  POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ll}
+  POSTGRES_HOST: ${POSTGRES_HOST:-db}
+  POSTGRES_PORT: ${POSTGRES_PORT:-5432}
+
+services:
+  dev:
+    image: ${IMAGE_NAME}:${IMAGE_TAG}
+    command: dev
+    volumes:
+      - ./data:/data
+      - ./ll:/legless-lizard/ll
+      - ./scripts:/legless-lizard/scripts
+
+    environment:
+      <<: *postgres-env-vars
+    env_file:
+      - ./secrets.env
+
+    depends_on:
+      - db
+  web:
+    image: ${IMAGE_NAME}:${IMAGE_TAG}
+    container_name: legless-lizard-api
+    command: web
+    volumes:
+      - ./ll:/legless-lizard/ll
+      - ./scripts:/legless-lizard/scripts
+    environment:
+      <<: *postgres-env-vars
+      DEBUG: ${DEBUG:-false}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      API_DOCS: ${API_DOCS:-True}
+    ports:
+      - 8084:8080
+
+    depends_on:
+      - db
+  db:
+    image: postgres:13-alpine
+    container_name: legless-lizard-db
+    command: ["postgres", "-c", "log_statement=all"]
+    environment:
+      <<: *postgres-env-vars
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data/pgdata
+    ports:
+      - 5402:5432

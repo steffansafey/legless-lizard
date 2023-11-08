@@ -1,0 +1,10 @@
+# App
+data/**
+
+# Git
+.git
+
+# Python
+**/*.pyc
+**/__pycache__/*
+env/**
