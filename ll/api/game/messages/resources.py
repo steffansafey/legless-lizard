@@ -13,6 +13,7 @@ class MessageType(Enum):
     JOIN_REQUEST = "join_request"
     JOIN_RESPONSE = "join_response"
     STATE_UPDATE = "state_update"
+    CLIENT_UPDATE = "client_update"
 
 
 class JoinRequest(BasePydanticSchema):
@@ -39,8 +40,16 @@ class StateUpdate(BasePydanticSchema):
     players: List[GamePlayer]
 
 
+class ClientUpdate(BasePydanticSchema):
+    """State update."""
+
+    tick: int
+    player_id: str
+    angle: float
+
+
 class MessageWrapper(BasePydanticSchema):
     """Wrapper for messages."""
 
     type: MessageType
-    payload: Union[JoinRequest, JoinResponse, StateUpdate]
+    payload: Union[JoinRequest, JoinResponse, StateUpdate, ClientUpdate]

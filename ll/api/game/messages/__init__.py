@@ -1,11 +1,12 @@
 from structlog import get_logger
 
-from .handlers import handle_join_request
+from .handlers import handle_client_update, handle_join_request
 from .resources import JoinRequest, JoinResponse, MessageType, MessageWrapper
 
 logger = get_logger(__name__)
 handlers = {
     MessageType.JOIN_REQUEST: handle_join_request,
+    MessageType.CLIENT_UPDATE: handle_client_update,
 }
 model_to_type = {
     JoinRequest: MessageType.JOIN_REQUEST,

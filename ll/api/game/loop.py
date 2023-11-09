@@ -1,11 +1,12 @@
 import asyncio
 import json
+import math
 from datetime import datetime, timedelta
 
 from structlog import get_logger
 
 from ll.api.game.messages.resources import MessageType, MessageWrapper, StateUpdate
-from ll.api.game.resources import GameState
+from ll.api.game.resources import GameState, PlayerStep
 
 TICK_PERIOD = 2
 
@@ -58,8 +59,8 @@ async def game_loop(app):
     logger.info("Starting game loop")
     while True:
         # here is where we'll do the game logic to calculate the next state
-        await asyncio.sleep(2)
-        game_state = app["game_states"][1]
+        game_state: GameState = app["game_states"][1]
+        await asyncio.sleep(game_state.tick_period)
         remove_disconnected_or_disconnecting_players(app, game_state)
 
         # log the active players
@@ -74,4 +75,15 @@ async def game_loop(app):
             seconds=TICK_PERIOD
         )
 
+        # Add a step to each player
+        for player in game_state.players:
+            take_step(player)
+
         await update_state_for_connected_players(app, game_state)
+
+
+def take_step(player):
+    x, y = player.steps[-1].coordinates
+    dx = math.cos(player.angle) * player.step_length
+    dy = math.sin(player.angle) * player.step_length
+    player.steps.append(PlayerStep(coordinates=[x + dx, y + dy]))

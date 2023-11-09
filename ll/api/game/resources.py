@@ -7,7 +7,7 @@ from pydantic import dataclasses
 class PlayerStep:
     """A step a player took."""
 
-    coordinates: List[int]
+    coordinates: List[float]
 
 
 @dataclasses.dataclass
@@ -20,6 +20,7 @@ class GamePlayer:
     steps: List[PlayerStep]
     step_length: float
     spawned: bool
+    angle: float = 0.0
 
 
 @dataclasses.dataclass
