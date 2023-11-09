@@ -1,32 +1,42 @@
+from typing import Any, Optional
+
 import structlog
 from aiohttp import web
+from pydantic import dataclasses
 
 logger = structlog.getLogger(__name__)
 
 
+@dataclasses.dataclass
+class SocketConnection:
+    """A socket connection."""
+
+    ws: Any
+    player_id: Optional[str] = None
+
+
 async def setup_ws_app(_app):
-    _app["sockets"] = []
+    _app["connections"] = []
 
 
 async def cleanup_ws_app(_app):
-    for s in _app["sockets"]:
-        await s.close()
-
-
-async def receive_and_put(ws):
-    async for m in ws:
-        logger.info("received ws message", message=m)
+    for ws in _app["connections"]:
+        await ws.close()
 
 
 async def setup_ws_request(request):
     """Prepare a WebSocket connection - closed if setup failed."""
     ws = web.WebSocketResponse(heartbeat=25)
-    request.app["sockets"].append(ws)
-    await ws.prepare(request)
+    conn = SocketConnection(ws=ws)
+    request.app["connections"].append(conn)
+    await conn.ws.prepare(request)
 
     return ws
 
 
-async def cleanup_ws_request(request, ws):
-    await ws.close()
-    request.app["sockets"].remove(ws)
+async def cleanup_ws_request(request, player_id):
+    for conn in request.app["connections"]:
+        if conn.player_id == player_id:
+            await conn.ws.close()
+            request.app["connections"].remove(conn)
+            return

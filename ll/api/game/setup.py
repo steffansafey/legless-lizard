@@ -15,4 +15,4 @@ def setup_game_states(app):
         players=[],
     )
 
-    app["game_states"][id] = [game_state]
+    app["game_states"][1] = game_state

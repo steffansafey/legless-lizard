@@ -13,7 +13,7 @@ model_to_type = {
 }
 
 
-async def handle_message(app, message: dict):
+async def handle_message(request, message: dict):
     """Handle a message from a websocket."""
     # convert the message into dataclass
     try:
@@ -24,7 +24,7 @@ async def handle_message(app, message: dict):
 
     # call the handler
     response_messages = await handlers[message_wrapper.type](
-        app, message_wrapper.payload
+        request, message_wrapper.payload
     )
 
     formatted_response_messages = []

@@ -1,5 +1,8 @@
+from datetime import datetime
 from enum import Enum
 from typing import List, Optional, Union
+
+from ll.api.game.resources import GamePlayer
 
 from .schema import BasePydanticSchema
 
@@ -9,6 +12,7 @@ class MessageType(Enum):
 
     JOIN_REQUEST = "join_request"
     JOIN_RESPONSE = "join_response"
+    STATE_UPDATE = "state_update"
 
 
 class JoinRequest(BasePydanticSchema):
@@ -25,8 +29,18 @@ class JoinResponse(BasePydanticSchema):
     ok: bool
 
 
+class StateUpdate(BasePydanticSchema):
+    """State update."""
+
+    tick: int
+    tick_period: float
+    server_timestamp: datetime
+    server_next_tick_time: datetime
+    players: List[GamePlayer]
+
+
 class MessageWrapper(BasePydanticSchema):
     """Wrapper for messages."""
 
     type: MessageType
-    payload: Union[JoinRequest, JoinResponse]
+    payload: Union[JoinRequest, JoinResponse, StateUpdate]
