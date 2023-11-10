@@ -13,9 +13,13 @@ from ll.api.game.resources import (
     MINIMUM_STEP_LENGTH,
     TICK_PERIOD,
     Consumable,
+    ConsumableType,
+    GamePlayer,
     GameState,
     PlayerStep,
 )
+
+from .intersect import point_inside_circle
 
 logger = get_logger(__name__)
 
@@ -106,7 +110,7 @@ async def game_loop(app):
 
         # Add a step to each player
         for player in game_state.players:
-            take_step(player)
+            take_step(player, game_state)
 
         # ensure there are enough consumables spawned
         ensure_consumables_spawned(game_state)
@@ -114,7 +118,13 @@ async def game_loop(app):
         await update_state_for_connected_players(app, game_state)
 
 
-def take_step(player):
+CONSUMABLE_TYPE_TO_DIFF = {
+    ConsumableType.APPLE: 20,
+    ConsumableType.POISON: -20,
+}
+
+
+def take_step(player: GamePlayer, game_state: GameState):
     x, y = player.steps[-1].coordinates
     dx = math.cos(player.angle) * player.step_length
     dy = math.sin(player.angle) * player.step_length
@@ -126,3 +136,12 @@ def take_step(player):
 
     # Decay step length
     player.step_length = max(player.step_length * 0.995, MINIMUM_STEP_LENGTH)
+
+    # Collisions with consumables
+    for consumable in game_state.consumables:
+        if point_inside_circle(
+            player.steps[-1].coordinates, consumable.coordinates, consumable.size
+        ):
+            player.step_length += CONSUMABLE_TYPE_TO_DIFF[consumable.type]
+            player.step_length = max(player.step_length, 50)
+            game_state.consumables.remove(consumable)
