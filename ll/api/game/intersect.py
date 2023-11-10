@@ -47,7 +47,7 @@ def _oneD_intersect(a, b, c, d) -> bool:
         ub2 = (d[1] - a[1]) / denom_y
 
     intervals = _overlap_intervals(ub1, ub2)
-    return len(intervals) != 0
+    return len(intervals) == 2
 
 
 def _overlap_intervals(ub1: float, ub2: float) -> List[float]:

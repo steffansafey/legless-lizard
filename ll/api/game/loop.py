@@ -131,7 +131,7 @@ def take_step(player: GamePlayer, game_state: GameState):
     player.steps.append(PlayerStep(coordinates=[x + dx, y + dy]))
 
     # Limit number of segments
-    max_steps = int(player.step_length / 5)
+    max_steps = int(player.step_length**0.6)
     player.steps = player.steps[-max_steps:]
 
     # Decay step length
