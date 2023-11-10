@@ -1,5 +1,5 @@
 import uuid
-from random import randint
+from random import choices, randint
 
 from structlog import get_logger
 
@@ -7,6 +7,29 @@ from ll.api.game.messages.resources import ClientUpdate, JoinRequest, JoinRespon
 from ll.api.game.resources import MINIMUM_STEP_LENGTH, GamePlayer, GameState, PlayerStep
 
 logger = get_logger(__name__)
+
+
+def color_palette():
+    """Generate a color palette."""
+    return [
+        [170, 68, 101],
+        [227, 210, 111],
+        [202, 137, 95],
+        [144, 241, 239],
+        [85, 111, 68],
+        [8, 76, 97],
+        [219, 179, 177],
+        [209, 122, 34],
+        [67, 87, 173],
+    ]
+
+
+def get_unassigned_color(app):
+    """Get an unassigned color."""
+    assigned_colors = [p.color for p in app["game_states"][1].players]
+    available_colors = [c for c in color_palette() if c not in assigned_colors]
+    color = choices(available_colors)[0]
+    return color
 
 
 async def assign_player_id_to_ws_connection(app, player_id, ws):
@@ -36,7 +59,7 @@ async def handle_join_request(request, message_wrapper: JoinRequest):
     player = GamePlayer(
         id=str(uuid.uuid4()),
         name=message_wrapper.name,
-        color=message_wrapper.color,
+        color=get_unassigned_color(app),
         step_length=MINIMUM_STEP_LENGTH,
         spawned=False,
         steps=[
