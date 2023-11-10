@@ -2,6 +2,9 @@ from typing import List
 
 from pydantic import dataclasses
 
+TICK_PERIOD = 2
+MINIMUM_STEP_LENGTH = 50
+
 
 @dataclasses.dataclass
 class PlayerStep:

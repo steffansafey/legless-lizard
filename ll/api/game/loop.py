@@ -6,9 +6,12 @@ from datetime import datetime, timedelta
 from structlog import get_logger
 
 from ll.api.game.messages.resources import MessageType, MessageWrapper, StateUpdate
-from ll.api.game.resources import GameState, PlayerStep
-
-TICK_PERIOD = 2
+from ll.api.game.resources import (
+    MINIMUM_STEP_LENGTH,
+    TICK_PERIOD,
+    GameState,
+    PlayerStep,
+)
 
 logger = get_logger(__name__)
 
@@ -87,3 +90,10 @@ def take_step(player):
     dx = math.cos(player.angle) * player.step_length
     dy = math.sin(player.angle) * player.step_length
     player.steps.append(PlayerStep(coordinates=[x + dx, y + dy]))
+
+    # Limit number of segments
+    max_steps = int(player.step_length / 5)
+    player.steps = player.steps[-max_steps:]
+
+    # Decay step length
+    player.step_length = max(player.step_length * 0.995, MINIMUM_STEP_LENGTH)

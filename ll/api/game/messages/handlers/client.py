@@ -4,7 +4,7 @@ from random import randint
 from structlog import get_logger
 
 from ll.api.game.messages.resources import ClientUpdate, JoinRequest, JoinResponse
-from ll.api.game.resources import GamePlayer, GameState, PlayerStep
+from ll.api.game.resources import MINIMUM_STEP_LENGTH, GamePlayer, GameState, PlayerStep
 
 logger = get_logger(__name__)
 
@@ -37,7 +37,7 @@ async def handle_join_request(request, message_wrapper: JoinRequest):
         id=str(uuid.uuid4()),
         name=message_wrapper.name,
         color=message_wrapper.color,
-        step_length=50,
+        step_length=MINIMUM_STEP_LENGTH,
         spawned=False,
         steps=[
             PlayerStep(
