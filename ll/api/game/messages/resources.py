@@ -2,7 +2,7 @@ from datetime import datetime
 from enum import Enum
 from typing import List, Optional, Union
 
-from ll.api.game.resources import GamePlayer
+from ll.api.game.resources import Consumable, GamePlayer
 
 from .schema import BasePydanticSchema
 
@@ -38,6 +38,7 @@ class StateUpdate(BasePydanticSchema):
     server_timestamp: datetime
     server_next_tick_time: datetime
     players: List[GamePlayer]
+    consumables: List[Consumable]
 
 
 class ClientUpdate(BasePydanticSchema):

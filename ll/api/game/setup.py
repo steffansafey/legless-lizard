@@ -13,6 +13,7 @@ def setup_game_states(app):
         server_timestamp=0,
         server_next_tick_time=0,
         players=[],
+        consumables=[],
     )
 
     app["game_states"][1] = game_state

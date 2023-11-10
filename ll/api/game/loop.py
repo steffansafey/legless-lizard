@@ -2,13 +2,17 @@ import asyncio
 import json
 import math
 from datetime import datetime, timedelta
+from random import choices, randint
 
 from structlog import get_logger
 
 from ll.api.game.messages.resources import MessageType, MessageWrapper, StateUpdate
 from ll.api.game.resources import (
+    CONSUMABLES,
+    MIN_CONSUMABLE_COUNT,
     MINIMUM_STEP_LENGTH,
     TICK_PERIOD,
+    Consumable,
     GameState,
     PlayerStep,
 )
@@ -25,6 +29,7 @@ def format_gamestate_ws_update(game_state: GameState):
             server_timestamp=game_state.server_timestamp,
             server_next_tick_time=game_state.server_next_tick_time,
             players=game_state.players,
+            consumables=game_state.consumables,
         ),
     )
     return json.loads(message.json())
@@ -42,6 +47,27 @@ async def update_state_for_connected_players(app, game_state):
         conn = get_connection_by_player_id(app, player.id)
         if conn:
             await conn.ws.send_json(game_state_msg)
+
+
+def ensure_consumables_spawned(game_state):
+    """Ensure there are enough consumables spawned."""
+
+    CONSUMABLE_SPAWN_RATIOS = {d.type: d.spawn_ratio for d in CONSUMABLES}
+    while len(game_state.consumables) < MIN_CONSUMABLE_COUNT:
+        # take a random consumable based on the spawn ratios
+        consumable = choices(
+            CONSUMABLES,
+            weights=list(CONSUMABLE_SPAWN_RATIOS.values()),
+            k=1,
+        )[0]
+
+        game_state.consumables.append(
+            Consumable(
+                coordinates=[randint(-1000, 1000), randint(-1000, 1000)],
+                type=consumable.type,
+                size=consumable.size,
+            )
+        )
 
 
 def remove_disconnected_or_disconnecting_players(app, game_state):
@@ -81,6 +107,9 @@ async def game_loop(app):
         # Add a step to each player
         for player in game_state.players:
             take_step(player)
+
+        # ensure there are enough consumables spawned
+        ensure_consumables_spawned(game_state)
 
         await update_state_for_connected_players(app, game_state)
 
