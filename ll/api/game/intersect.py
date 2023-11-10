@@ -23,7 +23,7 @@ def lines_intersect(
     if not (-EPS < denom < EPS):
         r = num1 / denom
         s = num2 / denom
-        return (r >= 0 and r <= 1) and (s >= 0 and s <= 1)
+        return (r > 0 and r < 1) and (s > 0 and s < 1)
     else:  # Parallel or same line
         if (-EPS < num1 < EPS) or (-EPS < num2 < EPS):
             return _oneD_intersect(a1, a2, b1, b2)

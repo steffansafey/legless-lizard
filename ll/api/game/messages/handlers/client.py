@@ -42,8 +42,8 @@ async def handle_join_request(request, message_wrapper: JoinRequest):
         steps=[
             PlayerStep(
                 coordinates=[
-                    float(randint(0, 100)),
-                    float(randint(0, 100)),
+                    float(randint(-1000, 1000)),
+                    float(randint(-1000, 1000)),
                 ]
             )
         ],

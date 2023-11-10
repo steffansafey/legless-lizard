@@ -19,7 +19,7 @@ from ll.api.game.resources import (
     PlayerStep,
 )
 
-from .intersect import point_inside_circle
+from .intersect import lines_intersect, point_inside_circle
 
 logger = get_logger(__name__)
 
@@ -145,3 +145,32 @@ def take_step(player: GamePlayer, game_state: GameState):
             player.step_length += CONSUMABLE_TYPE_TO_DIFF[consumable.type]
             player.step_length = max(player.step_length, 50)
             game_state.consumables.remove(consumable)
+
+    # Collisions with other players
+    if len(player.steps) >= 3:
+        last_step = (player.steps[-2].coordinates, player.steps[-1].coordinates)
+
+        for other_player in game_state.players:
+            for step1, step2 in zip(other_player.steps[:-1], other_player.steps[1:]):
+                other_step = (step1.coordinates, step2.coordinates)
+                if other_player.id == player.id and other_step == last_step:
+                    continue
+
+                if lines_intersect(*last_step, *other_step):
+                    reset_player(player)
+                    return
+
+
+def reset_player(player: GamePlayer):
+    """Reset a player to its initial state."""
+    player.steps = [
+        PlayerStep(
+            coordinates=[
+                float(randint(-1000, 1000)),
+                float(randint(-1000, 1000)),
+            ]
+        )
+    ]
+    player.step_length = MINIMUM_STEP_LENGTH
+    player.angle = 0.0
+    player.spawned = False
