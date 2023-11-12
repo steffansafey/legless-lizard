@@ -75,6 +75,7 @@ def ensure_consumables_spawned(game_state):
                 coordinates=[randint(-1000, 1000), randint(-1000, 1000)],
                 type=consumable.type,
                 size=int(consumable.size * size_multiplier),
+                color=consumable.color,
             )
         )
 

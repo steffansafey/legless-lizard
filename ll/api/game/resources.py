@@ -29,7 +29,7 @@ class ConsumableDefinition:
 CONSUMABLES = [
     ConsumableDefinition(
         type=ConsumableType.APPLE,
-        color=[0, 255, 0],
+        color=[0, 129, 72],
         size=10,
         spawn_ratio=0.7,
         player_size_diff=20,
@@ -39,7 +39,7 @@ CONSUMABLES = [
     ),
     ConsumableDefinition(
         type=ConsumableType.POISON,
-        color=[255, 0, 0],
+        color=[255, 82, 27],
         size=10,
         spawn_ratio=0.3,
         player_size_diff=-20,
@@ -82,6 +82,7 @@ class Consumable:
     type: ConsumableType
     coordinates: List[float]
     size: int
+    color: List[int]
     effect_multiplier: float = 1.0
 
 
