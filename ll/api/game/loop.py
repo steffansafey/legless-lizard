@@ -14,7 +14,7 @@ from ll.api.game.resources import (
     GameState,
 )
 
-from .player import take_step
+from .player import take_player_steps
 
 logger = get_logger(__name__)
 
@@ -103,11 +103,7 @@ async def game_loop(app):
             seconds=TICK_PERIOD
         )
 
-        # Add a step to each player
-        for player in game_state.players:
-            take_step(player, game_state)
-
-        # ensure there are enough consumables spawned
+        take_player_steps(game_state)
         ensure_consumables_spawned(game_state)
 
         await publish_state_to_connected_players(app, game_state)

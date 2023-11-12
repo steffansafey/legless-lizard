@@ -21,6 +21,7 @@ class ConsumableDefinition:
     color: List[int]
     size: int
     spawn_ratio: float
+    player_size_diff: int
 
 
 CONSUMABLES = [
@@ -29,14 +30,21 @@ CONSUMABLES = [
         color=[0, 255, 0],
         size=10,
         spawn_ratio=0.9,
+        player_size_diff=20,
     ),
     ConsumableDefinition(
         type=ConsumableType.POISON,
         color=[255, 0, 0],
         size=10,
         spawn_ratio=0.1,
+        player_size_diff=-20,
     ),
 ]
+
+
+def get_consumable_definition(consumable_type: ConsumableType):
+    """Get a consumable definition by type."""
+    return next((d for d in CONSUMABLES if d.type == consumable_type))
 
 
 @dataclasses.dataclass

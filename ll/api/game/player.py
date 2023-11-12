@@ -7,6 +7,7 @@ from ll.api.game.resources import (
     GamePlayer,
     GameState,
     PlayerStep,
+    get_consumable_definition,
 )
 
 from .intersect import lines_intersect, point_inside_circle
@@ -17,7 +18,7 @@ CONSUMABLE_TYPE_TO_DIFF = {
 }
 
 
-def reset_player(player: GamePlayer):
+def _reset_player(player: GamePlayer):
     """Reset a player to its initial state."""
     player.steps = [
         PlayerStep(
@@ -32,7 +33,7 @@ def reset_player(player: GamePlayer):
     player.spawned = False
 
 
-def test_player_collisions(player: GamePlayer, game_state: GameState):
+def _test_player_collisions(player: GamePlayer, game_state: GameState):
     """Test player collisions."""
     # Collisions with other players
     if len(player.steps) >= 3:
@@ -45,23 +46,24 @@ def test_player_collisions(player: GamePlayer, game_state: GameState):
                     continue
 
                 if lines_intersect(*last_step, *other_step):
-                    reset_player(player)
+                    _reset_player(player)
                     return
 
 
-def test_consumable_collisions(player: GamePlayer, game_state: GameState):
+def _test_consumable_collisions(player: GamePlayer, game_state: GameState):
     """Test consumable collisions."""
     # Collisions with consumables
     for consumable in game_state.consumables:
         if point_inside_circle(
             player.steps[-1].coordinates, consumable.coordinates, consumable.size
         ):
-            player.step_length += CONSUMABLE_TYPE_TO_DIFF[consumable.type]
+            consumable_definition = get_consumable_definition(consumable.type)
+            player.step_length += consumable_definition.player_size_diff
             player.step_length = max(player.step_length, 50)
             game_state.consumables.remove(consumable)
 
 
-def take_step(player: GamePlayer, game_state: GameState):
+def _take_step(player: GamePlayer, game_state: GameState):
     x, y = player.steps[-1].coordinates
     dx = math.cos(player.angle) * player.step_length
     dy = math.sin(player.angle) * player.step_length
@@ -75,5 +77,11 @@ def take_step(player: GamePlayer, game_state: GameState):
     player.step_length = max(player.step_length * 0.995, MINIMUM_STEP_LENGTH)
 
     # Test collisions
-    test_player_collisions(player, game_state)
-    test_consumable_collisions(player, game_state)
+    _test_player_collisions(player, game_state)
+    _test_consumable_collisions(player, game_state)
+
+
+def take_player_steps(game_state: GameState):
+    """Take a step for each player."""
+    for player in game_state.players:
+        _take_step(player, game_state)
