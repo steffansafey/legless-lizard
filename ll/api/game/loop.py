@@ -1,6 +1,5 @@
 import asyncio
 import json
-import math
 from datetime import datetime, timedelta
 from random import choices, randint
 
@@ -10,16 +9,12 @@ from ll.api.game.messages.resources import MessageType, MessageWrapper, StateUpd
 from ll.api.game.resources import (
     CONSUMABLES,
     MIN_CONSUMABLE_COUNT,
-    MINIMUM_STEP_LENGTH,
     TICK_PERIOD,
     Consumable,
-    ConsumableType,
-    GamePlayer,
     GameState,
-    PlayerStep,
 )
 
-from .intersect import lines_intersect, point_inside_circle
+from .player import take_step
 
 logger = get_logger(__name__)
 
@@ -45,7 +40,7 @@ def get_connection_by_player_id(app, player_id):
             return conn
 
 
-async def update_state_for_connected_players(app, game_state):
+async def publish_state_to_connected_players(app, game_state):
     game_state_msg = format_gamestate_ws_update(game_state)
     for player in game_state.players:
         conn = get_connection_by_player_id(app, player.id)
@@ -115,62 +110,4 @@ async def game_loop(app):
         # ensure there are enough consumables spawned
         ensure_consumables_spawned(game_state)
 
-        await update_state_for_connected_players(app, game_state)
-
-
-CONSUMABLE_TYPE_TO_DIFF = {
-    ConsumableType.APPLE: 20,
-    ConsumableType.POISON: -20,
-}
-
-
-def take_step(player: GamePlayer, game_state: GameState):
-    x, y = player.steps[-1].coordinates
-    dx = math.cos(player.angle) * player.step_length
-    dy = math.sin(player.angle) * player.step_length
-    player.steps.append(PlayerStep(coordinates=[x + dx, y + dy]))
-
-    # Limit number of segments
-    max_steps = int(player.step_length**0.6)
-    player.steps = player.steps[-max_steps:]
-
-    # Decay step length
-    player.step_length = max(player.step_length * 0.995, MINIMUM_STEP_LENGTH)
-
-    # Collisions with consumables
-    for consumable in game_state.consumables:
-        if point_inside_circle(
-            player.steps[-1].coordinates, consumable.coordinates, consumable.size
-        ):
-            player.step_length += CONSUMABLE_TYPE_TO_DIFF[consumable.type]
-            player.step_length = max(player.step_length, 50)
-            game_state.consumables.remove(consumable)
-
-    # Collisions with other players
-    if len(player.steps) >= 3:
-        last_step = (player.steps[-2].coordinates, player.steps[-1].coordinates)
-
-        for other_player in game_state.players:
-            for step1, step2 in zip(other_player.steps[:-1], other_player.steps[1:]):
-                other_step = (step1.coordinates, step2.coordinates)
-                if other_player.id == player.id and other_step == last_step:
-                    continue
-
-                if lines_intersect(*last_step, *other_step):
-                    reset_player(player)
-                    return
-
-
-def reset_player(player: GamePlayer):
-    """Reset a player to its initial state."""
-    player.steps = [
-        PlayerStep(
-            coordinates=[
-                float(randint(-1000, 1000)),
-                float(randint(-1000, 1000)),
-            ]
-        )
-    ]
-    player.step_length = MINIMUM_STEP_LENGTH
-    player.angle = 0.0
-    player.spawned = False
+        await publish_state_to_connected_players(app, game_state)

@@ -3,12 +3,15 @@ from typing import List, Tuple
 
 EPS = 0.000001
 
+# If we're within this distance of a circle, we're inside it
+CIRCLE_COLLISION_TOLERANCE = 1.5
+
 
 def point_inside_circle(
     point: Tuple[float], center: Tuple[float], radius: float
 ) -> bool:
     """Check if a point is inside a circle."""
-    return _distance(point, center) <= radius
+    return _distance(point, center) <= radius + CIRCLE_COLLISION_TOLERANCE
 
 
 def lines_intersect(

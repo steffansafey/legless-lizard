@@ -9,25 +9,23 @@ from ll.api.game.resources import MINIMUM_STEP_LENGTH, GamePlayer, GameState, Pl
 logger = get_logger(__name__)
 
 
-def color_palette():
-    """Generate a color palette."""
-    return [
-        [170, 68, 101],
-        [227, 210, 111],
-        [202, 137, 95],
-        [144, 241, 239],
-        [85, 111, 68],
-        [8, 76, 97],
-        [219, 179, 177],
-        [209, 122, 34],
-        [67, 87, 173],
-    ]
+COLOR_PALETTE = [
+    [170, 68, 101],
+    [227, 210, 111],
+    [202, 137, 95],
+    [144, 241, 239],
+    [85, 111, 68],
+    [8, 76, 97],
+    [219, 179, 177],
+    [209, 122, 34],
+    [67, 87, 173],
+]
 
 
 def get_unassigned_color(app):
     """Get an unassigned color."""
     assigned_colors = [p.color for p in app["game_states"][1].players]
-    available_colors = [c for c in color_palette() if c not in assigned_colors]
+    available_colors = [c for c in COLOR_PALETTE if c not in assigned_colors]
     color = choices(available_colors)[0]
     return color
 
