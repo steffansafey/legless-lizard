@@ -11,14 +11,14 @@ logger = get_logger(__name__)
 
 COLOR_PALETTE = [
     [170, 68, 101],
-    [227, 210, 111],
     [202, 137, 95],
     [144, 241, 239],
     [85, 111, 68],
     [8, 76, 97],
-    [219, 179, 177],
     [209, 122, 34],
     [67, 87, 173],
+    [148, 168, 154],
+    [109, 159, 113],
 ]
 
 
@@ -79,7 +79,7 @@ async def handle_join_request(request, message_wrapper: JoinRequest):
 async def handle_client_update(request, message_wrapper: ClientUpdate):
     """Handle a client update."""
     app = request.app
-    logger.info("handle_client_update", message_wrapper=message_wrapper)
+    # logger.info("handle_client_update", message_wrapper=message_wrapper)
 
     game_state: GameState = app["game_states"][1]
 
