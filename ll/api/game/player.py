@@ -1,9 +1,10 @@
 import math
 from random import randint
 
+from structlog import get_logger
+
 from ll.api.game.resources import (
     MINIMUM_STEP_LENGTH,
-    ConsumableType,
     GamePlayer,
     GameState,
     PlayerStep,
@@ -12,10 +13,7 @@ from ll.api.game.resources import (
 
 from .intersect import lines_intersect, point_inside_circle
 
-CONSUMABLE_TYPE_TO_DIFF = {
-    ConsumableType.APPLE: 20,
-    ConsumableType.POISON: -20,
-}
+logger = get_logger(__name__)
 
 
 def _reset_player(player: GamePlayer):
@@ -46,6 +44,11 @@ def _test_player_collisions(player: GamePlayer, game_state: GameState):
                     continue
 
                 if lines_intersect(*last_step, *other_step):
+                    logger.info(
+                        "player collision",
+                        player_name=player.name,
+                        other_player_name=other_player.name,
+                    )
                     _reset_player(player)
                     return
 
@@ -57,8 +60,17 @@ def _test_consumable_collisions(player: GamePlayer, game_state: GameState):
         if point_inside_circle(
             player.steps[-1].coordinates, consumable.coordinates, consumable.size
         ):
+            logger.info(
+                "consumable collision",
+                player_name=player.name,
+                consumable_type=consumable.type,
+            )
             consumable_definition = get_consumable_definition(consumable.type)
-            player.step_length += consumable_definition.player_size_diff
+            consumable_size_multiplier = consumable.size / consumable_definition.size
+            player.step_length += (
+                consumable_definition.size_effect_multiplier(consumable_size_multiplier)
+                * consumable_definition.player_size_diff
+            )
             player.step_length = max(player.step_length, 50)
             game_state.consumables.remove(consumable)
 

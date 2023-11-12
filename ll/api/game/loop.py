@@ -1,7 +1,7 @@
 import asyncio
 import json
 from datetime import datetime, timedelta
-from random import choices, randint
+from random import choices, randint, random
 
 from structlog import get_logger
 
@@ -60,11 +60,21 @@ def ensure_consumables_spawned(game_state):
             k=1,
         )[0]
 
+        # find random float between the size multiplier range
+        size_multiplier = (
+            random()
+            * (
+                consumable.size_multiplier_range[1]
+                - consumable.size_multiplier_range[0]
+            )
+            + consumable.size_multiplier_range[0]
+        )
+
         game_state.consumables.append(
             Consumable(
                 coordinates=[randint(-1000, 1000), randint(-1000, 1000)],
                 type=consumable.type,
-                size=consumable.size,
+                size=int(consumable.size * size_multiplier),
             )
         )
 

@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import List
+from typing import Callable, List
 
 from pydantic import dataclasses
 
@@ -22,6 +22,8 @@ class ConsumableDefinition:
     size: int
     spawn_ratio: float
     player_size_diff: int
+    size_multiplier_range: List[float]
+    size_effect_multiplier: Callable
 
 
 CONSUMABLES = [
@@ -29,15 +31,21 @@ CONSUMABLES = [
         type=ConsumableType.APPLE,
         color=[0, 255, 0],
         size=10,
-        spawn_ratio=0.9,
+        spawn_ratio=0.7,
         player_size_diff=20,
+        size_multiplier_range=[1.0, 4.0],
+        # the effect applied is the inverse of the size (bigger fruit = smaller effect)
+        size_effect_multiplier=lambda x: 1 / x,
     ),
     ConsumableDefinition(
         type=ConsumableType.POISON,
         color=[255, 0, 0],
         size=10,
-        spawn_ratio=0.1,
+        spawn_ratio=0.3,
         player_size_diff=-20,
+        size_multiplier_range=[1, 3.0],
+        # poison effect is constant regardless of size
+        size_effect_multiplier=lambda x: x,
     ),
 ]
 
@@ -74,6 +82,7 @@ class Consumable:
     type: ConsumableType
     coordinates: List[float]
     size: int
+    effect_multiplier: float = 1.0
 
 
 @dataclasses.dataclass
