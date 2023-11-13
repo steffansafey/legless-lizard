@@ -55,7 +55,7 @@ CONSUMABLES = [
         size=10,
         spawn_ratio=0.3,
         player_size_diff=-20,
-        size_multiplier_range=[1, 3.0],
+        size_multiplier_range=[1, 5.0],
         # poison effect is constant regardless of size
         size_effect_multiplier=lambda x: x,
     ),
