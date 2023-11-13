@@ -54,6 +54,20 @@ def ensure_consumables_spawned(game_state):
     """Ensure there are enough consumables spawned."""
 
     CONSUMABLE_SPAWN_RATIOS = {d.type: d.spawn_ratio for d in CONSUMABLES}
+    ACTUAL_SPAWN_RATIOS = {
+        d.type: len([c for c in game_state.consumables if c.type == d.type])
+        / max(len(game_state.consumables), 1)
+        for d in CONSUMABLES
+    }
+
+    TO_SPAWN_RATIOS = {}
+    for consumable_type, spawn_ratio in CONSUMABLE_SPAWN_RATIOS.items():
+        actual_ratio = ACTUAL_SPAWN_RATIOS[consumable_type]
+        if actual_ratio < spawn_ratio:
+            TO_SPAWN_RATIOS[consumable_type] = spawn_ratio
+        else:
+            TO_SPAWN_RATIOS[consumable_type] = 0
+
     while len(game_state.consumables) < MIN_CONSUMABLE_COUNT:
         # take a random consumable based on the spawn ratios
         consumable = choices(
