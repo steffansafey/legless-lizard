@@ -8,6 +8,7 @@ from ..resources import ConsumableType
 
 class BuffType(Enum):
     APPLE_MAGNET = "apple_magnet"
+    APPLE_REPEL = "apple_repel"
 
 
 class BuffApplicationTime(Enum):
@@ -47,8 +48,16 @@ BUFF_DEFINITIONS = {
         application_frequency=BuffApplicationFrequency.REPEATING,
         application_time=BuffApplicationTime.PRE_STEP,
     ),
+    BuffType.APPLE_REPEL: BuffDefinition(
+        type=BuffType.APPLE_REPEL,
+        default_duration=2,
+        is_debuff=True,
+        application_frequency=BuffApplicationFrequency.REPEATING,
+        application_time=BuffApplicationTime.POST_STEP,
+    ),
 }
 
 CONSUMABLE_TO_BUFF_MAP = {
     ConsumableType.PINEAPPLE: BUFF_DEFINITIONS[BuffType.APPLE_MAGNET],
+    ConsumableType.POISON: BUFF_DEFINITIONS[BuffType.APPLE_REPEL],
 }

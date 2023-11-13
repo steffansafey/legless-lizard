@@ -1,11 +1,12 @@
 import math
+from functools import partial
 
 from ll.api.game.resources import ConsumableType, GamePlayer, GameState
 
 from .resources import BuffType
 
 
-def apply_apple_magnet(game_state: GameState, player: GamePlayer):
+def attract_apples(game_state: GameState, player: GamePlayer, repel: bool):
     """Apple magnet effect."""
     # move all apples closer to the player, stopping at the player if they are close enough
     DISTANCE = 15
@@ -17,21 +18,30 @@ def apply_apple_magnet(game_state: GameState, player: GamePlayer):
             if dist < DISTANCE:
                 c.coordinates = player.steps[-1].coordinates
             else:
-                c.coordinates = [
-                    c.coordinates[0] + dx / dist * DISTANCE,
-                    c.coordinates[1] + dy / dist * DISTANCE,
-                ]
+                c.coordinates = (
+                    [
+                        c.coordinates[0] + dx / dist * DISTANCE,
+                        c.coordinates[1] + dy / dist * DISTANCE,
+                    ]
+                    if not repel
+                    else [
+                        c.coordinates[0] - dx / dist * DISTANCE,
+                        c.coordinates[1] - dy / dist * DISTANCE,
+                    ]
+                )
 
 
-def noop(game_state: GameState, player: GamePlayer):
+def noop(*args, **kwargs):
     """No-op effect."""
     pass
 
 
 BUFF_APPLY_MAP = {
-    BuffType.APPLE_MAGNET: apply_apple_magnet,
+    BuffType.APPLE_MAGNET: partial(attract_apples, repel=False),
+    BuffType.APPLE_REPEL: partial(attract_apples, repel=True),
 }
 
 BUFF_UNAPPLY_MAP = {
     BuffType.APPLE_MAGNET: noop,
+    BuffType.APPLE_REPEL: noop,
 }
