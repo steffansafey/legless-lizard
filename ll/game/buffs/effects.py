@@ -1,14 +1,17 @@
 import math
 from functools import partial
 
-from ll.api.game.resources import ConsumableType, GamePlayer, GameState
-
-from .resources import BuffType
+from ll.game.resources.buffs import BuffType
+from ll.game.resources.consumables import ConsumableType
+from ll.game.resources.game import GamePlayer, GameState
 
 
 def attract_apples(game_state: GameState, player: GamePlayer, repel: bool):
-    """Apple magnet effect."""
-    # move all apples closer to the player, stopping at the player if they are close enough
+    """Apple magnet effect.
+
+    Move all apples closer to the player, stopping at the player if they are close enough
+    """
+
     DISTANCE = 15
     for c in game_state.consumables:
         if c.type == ConsumableType.APPLE:
@@ -31,6 +34,14 @@ def attract_apples(game_state: GameState, player: GamePlayer, repel: bool):
                 )
 
 
+def tick_period_boost(game_state: GameState, player: GamePlayer, boost: float):
+    """Tick period boost effect.
+
+    Increase the tick period by a factor of boost.
+    """
+    game_state.tick_period *= boost
+
+
 def noop(*args, **kwargs):
     """No-op effect."""
     pass
@@ -39,9 +50,11 @@ def noop(*args, **kwargs):
 BUFF_APPLY_MAP = {
     BuffType.APPLE_MAGNET: partial(attract_apples, repel=False),
     BuffType.APPLE_REPEL: partial(attract_apples, repel=True),
+    BuffType.TICK_PERIOD_BOOST: partial(tick_period_boost, boost=0.5),
 }
 
 BUFF_UNAPPLY_MAP = {
     BuffType.APPLE_MAGNET: noop,
     BuffType.APPLE_REPEL: noop,
+    BuffType.TICK_PERIOD_BOOST: partial(tick_period_boost, boost=2),
 }

@@ -3,8 +3,8 @@ import json
 from aiohttp import web
 from structlog import get_logger
 
-from ll.api.game.messages import handle_message
-from ll.api.ws import setup_ws_request
+from ..messages import handle_message
+from ..ws import setup_ws_request
 
 logger = get_logger(__name__)
 routes = web.RouteTableDef()

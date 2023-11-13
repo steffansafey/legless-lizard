@@ -3,8 +3,14 @@ from random import choices, randint
 
 from structlog import get_logger
 
-from ll.api.game.messages.resources import ClientUpdate, JoinRequest, JoinResponse
-from ll.api.game.resources import MINIMUM_STEP_LENGTH, GamePlayer, GameState, PlayerStep
+from ll.game.resources.game import (
+    MINIMUM_STEP_LENGTH,
+    GamePlayer,
+    GameState,
+    PlayerStep,
+)
+
+from ..resources import ClientUpdate, JoinRequest, JoinResponse
 
 logger = get_logger(__name__)
 

@@ -3,17 +3,9 @@ from random import randint
 
 from structlog import get_logger
 
-from ll.api.game.resources import (
-    MINIMUM_STEP_LENGTH,
-    ConsumableType,
-    GamePlayer,
-    GameState,
-    PlayerStep,
-    get_consumable_definition,
-)
-
-from .buffs import get_buff_for_consumable
 from .intersect import lines_intersect, point_inside_circle
+from .resources.consumables import ConsumableType
+from .resources.game import MINIMUM_STEP_LENGTH, GamePlayer, GameState, PlayerStep
 
 logger = get_logger(__name__)
 
@@ -67,26 +59,28 @@ def _check_consumable_collisions(player: GamePlayer, game_state: GameState):
         if point_inside_circle(
             player.steps[-1].coordinates, consumable.coordinates, consumable.size
         ):
-            consumable_definition = get_consumable_definition(consumable.type)
-
-            if consumable_definition.type in [
+            if consumable.definition.type in [
                 ConsumableType.POISON,
                 ConsumableType.APPLE,
             ]:
                 consumable_size_multiplier = (
-                    consumable.size / consumable_definition.size
+                    consumable.size / consumable.definition.size
                 )
                 player.step_length += (
-                    consumable_definition.size_effect_multiplier(
+                    consumable.definition.size_effect_multiplier(
                         consumable_size_multiplier
                     )
-                    * consumable_definition.player_size_diff
+                    * consumable.definition.player_size_diff
                 )
                 player.step_length = max(player.step_length, 50)
 
-            buff = get_buff_for_consumable(consumable.type)
+            buff = consumable.buff
             if buff:
-                player.buffs.append(buff)
+                definition = buff.definition
+                if definition.applies_globally:
+                    game_state.global_buffs.append(buff)
+                else:
+                    player.buffs.append(buff)
 
             game_state.consumables.remove(consumable)
 
@@ -113,24 +107,3 @@ def take_player_steps(game_state: GameState):
     """Take a step for each player."""
     for player in game_state.players:
         _take_step(player, game_state)
-
-
-# def process_pre_step_powerups(game_state: GameState):
-#     """Process powerups that need to be applied before taking steps."""
-
-#     for player in game_state.players:
-#         for b in player.buffs:
-#             if b.type == PowerupType.APPLE_MAGNET:
-#                 # move all apples 10 units closer to the player, stopping at the player if they are close enough
-#                 for c in game_state.consumables:
-#                     if c.type == ConsumableType.APPLE:
-#                         dx = player.steps[-1].coordinates[0] - c.coordinates[0]
-#                         dy = player.steps[-1].coordinates[1] - c.coordinates[1]
-#                         dist = math.sqrt(dx**2 + dy**2)
-#                         if dist < 10:
-#                             c.coordinates = player.steps[-1].coordinates
-#                         else:
-#                             c.coordinates = (
-#                                 c.coordinates[0] + dx / dist * 10,
-#                                 c.coordinates[1] + dy / dist * 10,
-#                             )

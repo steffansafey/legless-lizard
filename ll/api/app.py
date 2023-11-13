@@ -7,9 +7,9 @@ from aiohttp_middlewares import cors_middleware
 from ll.logger import setup_logging
 from ll.sentry import setup_sentry
 
+from ..game.loop import game_loop
+from ..game.setup import setup_game_states
 from ..storage.db import close_connection_pool, create_connection_pool
-from .game.loop import game_loop
-from .game.setup import setup_game_states
 from .handlers.game import setup_api_routes
 from .healthcheck import setup_healthcheck_routes
 from .middlewares import http_error_middleware

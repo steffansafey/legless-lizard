@@ -3,12 +3,11 @@ from typing import Optional
 
 from pydantic import dataclasses
 
-from ..resources import ConsumableType
-
 
 class BuffType(Enum):
     APPLE_MAGNET = "apple_magnet"
     APPLE_REPEL = "apple_repel"
+    TICK_PERIOD_BOOST = "tick_period_boost"
 
 
 class BuffApplicationTime(Enum):
@@ -24,20 +23,25 @@ class BuffApplicationFrequency(Enum):
 
 
 @dataclasses.dataclass
-class Buff:
-    type: BuffType
-    is_debuff: bool
-    is_applied: bool
-    duration_remaining: Optional[int]
-
-
-@dataclasses.dataclass
 class BuffDefinition:
     type: BuffType
     default_duration: int
     is_debuff: bool
     application_frequency: BuffApplicationFrequency
     application_time: BuffApplicationTime
+    applies_globally: bool
+
+
+@dataclasses.dataclass
+class Buff:
+    type: BuffType
+    is_debuff: bool
+    is_applied: bool
+    duration_remaining: Optional[int]
+
+    @property
+    def definition(self) -> BuffDefinition:
+        return BUFF_DEFINITIONS[self.type]
 
 
 BUFF_DEFINITIONS = {
@@ -47,6 +51,7 @@ BUFF_DEFINITIONS = {
         is_debuff=False,
         application_frequency=BuffApplicationFrequency.REPEATING,
         application_time=BuffApplicationTime.POST_STEP,
+        applies_globally=False,
     ),
     BuffType.APPLE_REPEL: BuffDefinition(
         type=BuffType.APPLE_REPEL,
@@ -54,10 +59,14 @@ BUFF_DEFINITIONS = {
         is_debuff=True,
         application_frequency=BuffApplicationFrequency.REPEATING,
         application_time=BuffApplicationTime.POST_STEP,
+        applies_globally=False,
     ),
-}
-
-CONSUMABLE_TO_BUFF_MAP = {
-    ConsumableType.PINEAPPLE: BUFF_DEFINITIONS[BuffType.APPLE_MAGNET],
-    ConsumableType.POISON: BUFF_DEFINITIONS[BuffType.APPLE_REPEL],
+    BuffType.TICK_PERIOD_BOOST: BuffDefinition(
+        type=BuffType.TICK_PERIOD_BOOST,
+        default_duration=12,
+        is_debuff=False,
+        application_frequency=BuffApplicationFrequency.ONCE,
+        application_time=BuffApplicationTime.POST_STEP,
+        applies_globally=True,
+    ),
 }

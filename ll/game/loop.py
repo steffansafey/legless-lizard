@@ -5,17 +5,11 @@ from random import choices, randint, random
 
 from structlog import get_logger
 
-from ll.api.game.messages.resources import MessageType, MessageWrapper, StateUpdate
-from ll.api.game.resources import (
-    CONSUMABLES,
-    MIN_CONSUMABLE_COUNT,
-    TICK_PERIOD,
-    Consumable,
-    GameState,
-)
-
+from ..api.messages.resources import MessageType, MessageWrapper, StateUpdate
 from .buffs import BuffApplicationTime, apply_and_decay_buffs
 from .player import take_player_steps
+from .resources.consumables import CONSUMABLES, Consumable
+from .resources.game import MIN_CONSUMABLE_COUNT, GameState
 
 logger = get_logger(__name__)
 
@@ -25,7 +19,7 @@ def format_gamestate_ws_update(game_state: GameState):
         type=MessageType.STATE_UPDATE,
         payload=StateUpdate(
             tick=game_state.tick,
-            tick_period=TICK_PERIOD,
+            tick_period=game_state.tick_period,
             server_timestamp=game_state.server_timestamp,
             server_next_tick_time=game_state.server_next_tick_time,
             players=game_state.players,
@@ -125,10 +119,6 @@ async def game_loop(app):
         game_state.tick += 1
         game_state.server_timestamp = datetime.now()
 
-        # add the tick period to the server timestamp in seconds
-        game_state.server_next_tick_time = datetime.now() + timedelta(
-            seconds=TICK_PERIOD
-        )
         apply_and_decay_buffs(game_state, BuffApplicationTime.PRE_STEP)
 
         take_player_steps(game_state)
@@ -136,4 +126,8 @@ async def game_loop(app):
 
         apply_and_decay_buffs(game_state, BuffApplicationTime.POST_STEP)
 
+        # add the tick period to the server timestamp in seconds
+        game_state.server_next_tick_time = datetime.now() + timedelta(
+            seconds=game_state.tick_period
+        )
         await publish_state_to_connected_players(app, game_state)

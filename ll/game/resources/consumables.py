@@ -1,28 +1,23 @@
+import dataclasses
 from enum import Enum
 from typing import Callable, List
 
-from pydantic import dataclasses
-
-TICK_PERIOD = 2
-MINIMUM_STEP_LENGTH = 50
-MIN_CONSUMABLE_COUNT = 50
-
-
-class BuffType(Enum):
-    APPLE_MAGNET = "apple_magnet"
-
-
-@dataclasses.dataclass
-class Buff:
-    type: BuffType
-    is_debuff: bool
-    duration_remaining: int
+from .buffs import BUFF_DEFINITIONS, Buff, BuffType
 
 
 class ConsumableType(Enum):
     APPLE = "apple"
     POISON = "poison"
     PINEAPPLE = "pineapple"
+    GRAPE = "grape"
+    STONE = "stone"
+
+
+CONSUMABLE_TO_BUFF_MAP = {
+    ConsumableType.PINEAPPLE: BUFF_DEFINITIONS[BuffType.APPLE_MAGNET],
+    ConsumableType.POISON: BUFF_DEFINITIONS[BuffType.APPLE_REPEL],
+    ConsumableType.GRAPE: BUFF_DEFINITIONS[BuffType.TICK_PERIOD_BOOST],
+}
 
 
 @dataclasses.dataclass
@@ -68,33 +63,25 @@ CONSUMABLES = [
         size_multiplier_range=[1, 1],
         size_effect_multiplier=lambda x: x,
     ),
+    ConsumableDefinition(
+        type=ConsumableType.GRAPE,
+        color=[181, 129, 197],
+        size=10,
+        spawn_ratio=0.3,
+        player_size_diff=0,
+        size_multiplier_range=[1, 1],
+        size_effect_multiplier=lambda x: x,
+    ),
+    ConsumableDefinition(
+        type=ConsumableType.STONE,
+        color=[143, 143, 143],
+        size=10,
+        spawn_ratio=0.3,
+        player_size_diff=0,
+        size_multiplier_range=[1, 1],
+        size_effect_multiplier=lambda x: x,
+    ),
 ]
-
-
-def get_consumable_definition(consumable_type: ConsumableType):
-    """Get a consumable definition by type."""
-    return next((d for d in CONSUMABLES if d.type == consumable_type))
-
-
-@dataclasses.dataclass
-class PlayerStep:
-    """A step a player took."""
-
-    coordinates: List[float]
-
-
-@dataclasses.dataclass
-class GamePlayer:
-    """A player in the game."""
-
-    name: str
-    id: str
-    color: List[int]
-    steps: List[PlayerStep]
-    step_length: float
-    buffs: List[Buff]
-    spawned: bool
-    angle: float = 0.0
 
 
 @dataclasses.dataclass
@@ -107,15 +94,22 @@ class Consumable:
     color: List[int]
     effect_multiplier: float = 1.0
 
+    @property
+    def definition(self):
+        """Get the consumable definition."""
+        return next((d for d in CONSUMABLES if d.type == self.type), None)
 
-@dataclasses.dataclass
-class GameState:
-    """The state of the game."""
+    @property
+    def buff(self):
+        """Get the buff that this consumable applies."""
+        buff_definition = CONSUMABLE_TO_BUFF_MAP.get(self.type, None)
 
-    id: int
-    tick: int
-    tick_period: float
-    server_timestamp: int
-    server_next_tick_time: int
-    players: List[GamePlayer]
-    consumables: List[Consumable]
+        if not buff_definition:
+            return None
+
+        return Buff(
+            type=buff_definition.type,
+            is_debuff=buff_definition.is_debuff,
+            duration_remaining=buff_definition.default_duration,
+            is_applied=False,
+        )

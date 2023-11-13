@@ -1,4 +1,4 @@
-from .resources import GameState
+from .resources.game import GameState
 
 
 def setup_game_states(app):
@@ -14,6 +14,7 @@ def setup_game_states(app):
         server_next_tick_time=0,
         players=[],
         consumables=[],
+        global_buffs=[],
     )
 
     app["game_states"][1] = game_state

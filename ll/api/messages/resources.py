@@ -2,8 +2,7 @@ from datetime import datetime
 from enum import Enum
 from typing import List, Optional, Union
 
-from ll.api.game.resources import Consumable, GamePlayer
-
+from ...game.resources.game import Consumable, GamePlayer
 from .schema import BasePydanticSchema
 
 
