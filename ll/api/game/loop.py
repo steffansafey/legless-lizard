@@ -14,6 +14,7 @@ from ll.api.game.resources import (
     GameState,
 )
 
+from .buffs import BuffApplicationTime, apply_and_decay_buffs
 from .player import take_player_steps
 
 logger = get_logger(__name__)
@@ -31,6 +32,7 @@ def format_gamestate_ws_update(game_state: GameState):
             consumables=game_state.consumables,
         ),
     )
+
     return json.loads(message.json())
 
 
@@ -113,8 +115,11 @@ async def game_loop(app):
         game_state.server_next_tick_time = datetime.now() + timedelta(
             seconds=TICK_PERIOD
         )
+        apply_and_decay_buffs(game_state, BuffApplicationTime.PRE_STEP)
 
         take_player_steps(game_state)
         ensure_consumables_spawned(game_state)
+
+        apply_and_decay_buffs(game_state, BuffApplicationTime.POST_STEP)
 
         await publish_state_to_connected_players(app, game_state)

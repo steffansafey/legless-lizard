@@ -5,12 +5,14 @@ from structlog import get_logger
 
 from ll.api.game.resources import (
     MINIMUM_STEP_LENGTH,
+    ConsumableType,
     GamePlayer,
     GameState,
     PlayerStep,
     get_consumable_definition,
 )
 
+from .buffs import get_buff_for_consumable
 from .intersect import lines_intersect, point_inside_circle
 
 logger = get_logger(__name__)
@@ -31,7 +33,7 @@ def _reset_player(player: GamePlayer):
     player.spawned = False
 
 
-def _test_player_collisions(player: GamePlayer, game_state: GameState):
+def _check_player_collisions(player: GamePlayer, game_state: GameState):
     """Test player collisions."""
     # Collisions with other players
     if len(player.steps) >= 3:
@@ -53,25 +55,39 @@ def _test_player_collisions(player: GamePlayer, game_state: GameState):
                     return
 
 
-def _test_consumable_collisions(player: GamePlayer, game_state: GameState):
-    """Test consumable collisions."""
-    # Collisions with consumables
+def _check_consumable_collisions(player: GamePlayer, game_state: GameState):
+    """Test consumable collisions.
+
+    Consumables are removed from the game state if they are consumed.
+
+    Any new buffs that are applied to the player are added to the player's buffs list.
+    """
+
     for consumable in game_state.consumables:
         if point_inside_circle(
             player.steps[-1].coordinates, consumable.coordinates, consumable.size
         ):
-            logger.info(
-                "consumable collision",
-                player_name=player.name,
-                consumable_type=consumable.type,
-            )
             consumable_definition = get_consumable_definition(consumable.type)
-            consumable_size_multiplier = consumable.size / consumable_definition.size
-            player.step_length += (
-                consumable_definition.size_effect_multiplier(consumable_size_multiplier)
-                * consumable_definition.player_size_diff
-            )
-            player.step_length = max(player.step_length, 50)
+
+            if consumable_definition.type in [
+                ConsumableType.POISON,
+                ConsumableType.APPLE,
+            ]:
+                consumable_size_multiplier = (
+                    consumable.size / consumable_definition.size
+                )
+                player.step_length += (
+                    consumable_definition.size_effect_multiplier(
+                        consumable_size_multiplier
+                    )
+                    * consumable_definition.player_size_diff
+                )
+                player.step_length = max(player.step_length, 50)
+
+            buff = get_buff_for_consumable(consumable.type)
+            if buff:
+                player.buffs.append(buff)
+
             game_state.consumables.remove(consumable)
 
 
@@ -89,11 +105,32 @@ def _take_step(player: GamePlayer, game_state: GameState):
     player.step_length = max(player.step_length * 0.995, MINIMUM_STEP_LENGTH)
 
     # Test collisions
-    _test_player_collisions(player, game_state)
-    _test_consumable_collisions(player, game_state)
+    _check_player_collisions(player, game_state)
+    _check_consumable_collisions(player, game_state)
 
 
 def take_player_steps(game_state: GameState):
     """Take a step for each player."""
     for player in game_state.players:
         _take_step(player, game_state)
+
+
+# def process_pre_step_powerups(game_state: GameState):
+#     """Process powerups that need to be applied before taking steps."""
+
+#     for player in game_state.players:
+#         for b in player.buffs:
+#             if b.type == PowerupType.APPLE_MAGNET:
+#                 # move all apples 10 units closer to the player, stopping at the player if they are close enough
+#                 for c in game_state.consumables:
+#                     if c.type == ConsumableType.APPLE:
+#                         dx = player.steps[-1].coordinates[0] - c.coordinates[0]
+#                         dy = player.steps[-1].coordinates[1] - c.coordinates[1]
+#                         dist = math.sqrt(dx**2 + dy**2)
+#                         if dist < 10:
+#                             c.coordinates = player.steps[-1].coordinates
+#                         else:
+#                             c.coordinates = (
+#                                 c.coordinates[0] + dx / dist * 10,
+#                                 c.coordinates[1] + dy / dist * 10,
+#                             )

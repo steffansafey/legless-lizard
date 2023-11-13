@@ -8,9 +8,21 @@ MINIMUM_STEP_LENGTH = 50
 MIN_CONSUMABLE_COUNT = 50
 
 
+class BuffType(Enum):
+    APPLE_MAGNET = "apple_magnet"
+
+
+@dataclasses.dataclass
+class Buff:
+    type: BuffType
+    is_debuff: bool
+    duration_remaining: int
+
+
 class ConsumableType(Enum):
     APPLE = "apple"
     POISON = "poison"
+    PINEAPPLE = "pineapple"
 
 
 @dataclasses.dataclass
@@ -31,7 +43,7 @@ CONSUMABLES = [
         type=ConsumableType.APPLE,
         color=[0, 129, 72],
         size=10,
-        spawn_ratio=0.7,
+        spawn_ratio=0.6,
         player_size_diff=20,
         size_multiplier_range=[1.0, 4.0],
         # the effect applied is the inverse of the size (bigger fruit = smaller effect)
@@ -45,6 +57,15 @@ CONSUMABLES = [
         player_size_diff=-20,
         size_multiplier_range=[1, 3.0],
         # poison effect is constant regardless of size
+        size_effect_multiplier=lambda x: x,
+    ),
+    ConsumableDefinition(
+        type=ConsumableType.PINEAPPLE,
+        color=[247, 203, 21],
+        size=10,
+        spawn_ratio=0.1,
+        player_size_diff=0,
+        size_multiplier_range=[1, 1],
         size_effect_multiplier=lambda x: x,
     ),
 ]
@@ -71,6 +92,7 @@ class GamePlayer:
     color: List[int]
     steps: List[PlayerStep]
     step_length: float
+    buffs: List[Buff]
     spawned: bool
     angle: float = 0.0
 

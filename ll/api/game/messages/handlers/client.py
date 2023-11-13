@@ -12,7 +12,6 @@ logger = get_logger(__name__)
 COLOR_PALETTE = [
     [170, 68, 101],
     [202, 137, 95],
-    [144, 241, 239],
     [85, 111, 68],
     [8, 76, 97],
     [209, 122, 34],
@@ -69,6 +68,7 @@ async def handle_join_request(request, message_wrapper: JoinRequest):
                 ]
             )
         ],
+        buffs=[],
     )
     app["game_states"][1].players.append(player)
     logger.info("player joined", existing_player=False)
