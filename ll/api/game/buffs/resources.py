@@ -46,7 +46,7 @@ BUFF_DEFINITIONS = {
         default_duration=8,
         is_debuff=False,
         application_frequency=BuffApplicationFrequency.REPEATING,
-        application_time=BuffApplicationTime.PRE_STEP,
+        application_time=BuffApplicationTime.POST_STEP,
     ),
     BuffType.APPLE_REPEL: BuffDefinition(
         type=BuffType.APPLE_REPEL,
