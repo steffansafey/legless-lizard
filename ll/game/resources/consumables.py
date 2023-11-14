@@ -17,6 +17,7 @@ CONSUMABLE_TO_BUFF_MAP = {
     ConsumableType.PINEAPPLE: BUFF_DEFINITIONS[BuffType.APPLE_MAGNET],
     ConsumableType.POISON: BUFF_DEFINITIONS[BuffType.APPLE_REPEL],
     ConsumableType.GRAPE: BUFF_DEFINITIONS[BuffType.TICK_PERIOD_BOOST],
+    ConsumableType.STONE: BUFF_DEFINITIONS[BuffType.GHOST],
 }
 
 
@@ -46,7 +47,7 @@ CONSUMABLE_DEFINITIONS = [
     ),
     ConsumableDefinition(
         type=ConsumableType.POISON,
-        color=[255, 82, 27],
+        color=[245, 65, 0],
         size=10,
         spawn_ratio=0.3,
         player_size_diff=-20,
@@ -78,7 +79,7 @@ CONSUMABLE_DEFINITIONS = [
         size=10,
         spawn_ratio=0.3,
         player_size_diff=0,
-        size_multiplier_range=[1, 1],
+        size_multiplier_range=[1, 1.3],
         size_effect_multiplier=lambda x: x,
     ),
 ]

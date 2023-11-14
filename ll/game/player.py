@@ -4,6 +4,7 @@ from random import randint
 from structlog import get_logger
 
 from .intersect import lines_intersect, point_inside_circle
+from .resources.buffs import BuffType
 from .resources.consumables import ConsumableType
 from .resources.game import MINIMUM_STEP_LENGTH, GamePlayer, GameState, PlayerStep
 
@@ -28,6 +29,9 @@ def _reset_player(player: GamePlayer):
 def _check_player_collisions(player: GamePlayer, game_state: GameState):
     """Test player collisions."""
     # Collisions with other players
+    if any([b for b in player.buffs if b.definition.type == BuffType.GHOST]):
+        return
+
     if len(player.steps) >= 3:
         last_step = (player.steps[-2].coordinates, player.steps[-1].coordinates)
 

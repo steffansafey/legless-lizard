@@ -8,6 +8,7 @@ class BuffType(Enum):
     APPLE_MAGNET = "apple_magnet"
     APPLE_REPEL = "apple_repel"
     TICK_PERIOD_BOOST = "tick_period_boost"
+    GHOST = "ghost"
 
 
 class BuffApplicationTime(Enum):
@@ -68,5 +69,13 @@ BUFF_DEFINITIONS = {
         application_frequency=BuffApplicationFrequency.ONCE,
         application_time=BuffApplicationTime.POST_STEP,
         applies_globally=True,
+    ),
+    BuffType.GHOST: BuffDefinition(
+        type=BuffType.GHOST,
+        default_duration=8,
+        is_debuff=False,
+        application_frequency=BuffApplicationFrequency.ONCE,
+        application_time=BuffApplicationTime.POST_STEP,
+        applies_globally=False,
     ),
 }

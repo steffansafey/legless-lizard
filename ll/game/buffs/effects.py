@@ -51,10 +51,12 @@ BUFF_APPLY_MAP = {
     BuffType.APPLE_MAGNET: partial(attract_apples, repel=False),
     BuffType.APPLE_REPEL: partial(attract_apples, repel=True),
     BuffType.TICK_PERIOD_BOOST: partial(tick_period_boost, boost=0.5),
+    BuffType.GHOST: noop,
 }
 
 BUFF_UNAPPLY_MAP = {
     BuffType.APPLE_MAGNET: noop,
     BuffType.APPLE_REPEL: noop,
     BuffType.TICK_PERIOD_BOOST: partial(tick_period_boost, boost=2),
+    BuffType.GHOST: noop,
 }
