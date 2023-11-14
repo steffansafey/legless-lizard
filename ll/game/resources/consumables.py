@@ -33,12 +33,12 @@ class ConsumableDefinition:
     size_effect_multiplier: Callable
 
 
-CONSUMABLES = [
+CONSUMABLE_DEFINITIONS = [
     ConsumableDefinition(
         type=ConsumableType.APPLE,
         color=[0, 129, 72],
         size=10,
-        spawn_ratio=0.6,
+        spawn_ratio=0.8,
         player_size_diff=20,
         size_multiplier_range=[1.0, 4.0],
         # the effect applied is the inverse of the size (bigger fruit = smaller effect)
@@ -67,7 +67,7 @@ CONSUMABLES = [
         type=ConsumableType.GRAPE,
         color=[181, 129, 197],
         size=10,
-        spawn_ratio=0.3,
+        spawn_ratio=0.2,
         player_size_diff=0,
         size_multiplier_range=[1, 1],
         size_effect_multiplier=lambda x: x,
@@ -97,7 +97,7 @@ class Consumable:
     @property
     def definition(self):
         """Get the consumable definition."""
-        return next((d for d in CONSUMABLES if d.type == self.type), None)
+        return next((d for d in CONSUMABLE_DEFINITIONS if d.type == self.type), None)
 
     @property
     def buff(self):

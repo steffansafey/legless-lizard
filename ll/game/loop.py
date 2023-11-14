@@ -1,14 +1,14 @@
 import asyncio
 import json
 from datetime import datetime, timedelta
-from random import choices, randint, random
+from random import randint, random
 
 from structlog import get_logger
 
 from ..api.messages.resources import MessageType, MessageWrapper, StateUpdate
 from .buffs import BuffApplicationTime, apply_and_decay_buffs
 from .player import take_player_steps
-from .resources.consumables import CONSUMABLES, Consumable
+from .resources.consumables import CONSUMABLE_DEFINITIONS, Consumable
 from .resources.game import MIN_CONSUMABLE_COUNT, GameState
 
 logger = get_logger(__name__)
@@ -44,50 +44,34 @@ async def publish_state_to_connected_players(app, game_state):
             await conn.ws.send_json(game_state_msg)
 
 
-def ensure_consumables_spawned(game_state):
+def spawn_consumables(game_state):
     """Ensure there are enough consumables spawned."""
 
-    CONSUMABLE_SPAWN_RATIOS = {d.type: d.spawn_ratio for d in CONSUMABLES}
-    ACTUAL_SPAWN_RATIOS = {
-        d.type: len([c for c in game_state.consumables if c.type == d.type])
-        / max(len(game_state.consumables), 1)
-        for d in CONSUMABLES
-    }
-
-    TO_SPAWN_RATIOS = {}
-    for consumable_type, spawn_ratio in CONSUMABLE_SPAWN_RATIOS.items():
-        actual_ratio = ACTUAL_SPAWN_RATIOS[consumable_type]
-        if actual_ratio < spawn_ratio:
-            TO_SPAWN_RATIOS[consumable_type] = spawn_ratio
-        else:
-            TO_SPAWN_RATIOS[consumable_type] = 0
-
-    while len(game_state.consumables) < MIN_CONSUMABLE_COUNT:
-        # take a random consumable based on the spawn ratios
-        consumable = choices(
-            CONSUMABLES,
-            weights=list(CONSUMABLE_SPAWN_RATIOS.values()),
-            k=1,
-        )[0]
-
-        # find random float between the size multiplier range
-        size_multiplier = (
-            random()
-            * (
-                consumable.size_multiplier_range[1]
-                - consumable.size_multiplier_range[0]
-            )
-            + consumable.size_multiplier_range[0]
+    for consumable in CONSUMABLE_DEFINITIONS:
+        expected_spawn_count = int(consumable.spawn_ratio * MIN_CONSUMABLE_COUNT)
+        actual_spawn_count = len(
+            [c for c in game_state.consumables if c.type == consumable.type]
         )
+        diff = expected_spawn_count - actual_spawn_count
 
-        game_state.consumables.append(
-            Consumable(
-                coordinates=[randint(-1000, 1000), randint(-1000, 1000)],
-                type=consumable.type,
-                size=int(consumable.size * size_multiplier),
-                color=consumable.color,
+        for _ in range(diff):
+            size_multiplier = (
+                random()
+                * (
+                    consumable.size_multiplier_range[1]
+                    - consumable.size_multiplier_range[0]
+                )
+                + consumable.size_multiplier_range[0]
             )
-        )
+
+            game_state.consumables.append(
+                Consumable(
+                    coordinates=[randint(-1000, 1000), randint(-1000, 1000)],
+                    type=consumable.type,
+                    size=int(consumable.size * size_multiplier),
+                    color=consumable.color,
+                )
+            )
 
 
 def remove_disconnected_or_disconnecting_players(app, game_state):
@@ -107,7 +91,6 @@ def remove_disconnected_or_disconnecting_players(app, game_state):
 async def game_loop(app):
     logger.info("Starting game loop")
     while True:
-        # here is where we'll do the game logic to calculate the next state
         game_state: GameState = app["game_states"][1]
         await asyncio.sleep(game_state.tick_period)
         remove_disconnected_or_disconnecting_players(app, game_state)
@@ -122,7 +105,7 @@ async def game_loop(app):
         apply_and_decay_buffs(game_state, BuffApplicationTime.PRE_STEP)
 
         take_player_steps(game_state)
-        ensure_consumables_spawned(game_state)
+        spawn_consumables(game_state)
 
         apply_and_decay_buffs(game_state, BuffApplicationTime.POST_STEP)
 
