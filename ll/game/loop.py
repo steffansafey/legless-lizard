@@ -40,7 +40,7 @@ async def publish_state_to_connected_players(app, game_state):
     game_state_msg = format_gamestate_ws_update(game_state)
     for player in game_state.players:
         conn = get_connection_by_player_id(app, player.id)
-        if conn:
+        if conn and not conn.ws.closed:
             await conn.ws.send_json(game_state_msg)
 
 
