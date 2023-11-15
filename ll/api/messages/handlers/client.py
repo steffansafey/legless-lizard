@@ -1,3 +1,4 @@
+import math
 import uuid
 from random import choices, randint
 
@@ -74,6 +75,7 @@ async def handle_join_request(request, message_wrapper: JoinRequest):
                 ]
             )
         ],
+        step_fov=math.pi * 0.875,
         buffs=[],
     )
     app["game_states"][1].players.append(player)
@@ -81,6 +83,15 @@ async def handle_join_request(request, message_wrapper: JoinRequest):
     await assign_player_id_to_ws_connection(app, player.id, request.conn)
 
     return [JoinResponse(player_id=player.id, ok=True)]
+
+
+def _normalize_angle(angle):
+    """
+    Normalize an angle to be within -pi to pi.
+
+    e.g. 3pi -> pi, -3pi -> -pi
+    """
+    return (angle + math.pi) % (2 * math.pi) - math.pi
 
 
 async def handle_client_update(request, message_wrapper: ClientUpdate):
@@ -99,6 +110,23 @@ async def handle_client_update(request, message_wrapper: ClientUpdate):
     if not player:
         logger.warning("player not found", player_id=message_wrapper.player_id)
         return []
+
+    # validate the player's step is within the fov
+    if len(player.steps) >= 2:
+        last_step = player.steps[-1].coordinates
+        second_last_step = player.steps[-2].coordinates
+        previous_step_angle = math.atan2(
+            last_step[1] - second_last_step[1], last_step[0] - second_last_step[0]
+        )
+        angle_diff = abs(_normalize_angle(previous_step_angle - player.angle))
+        if angle_diff > player.step_fov:
+            logger.warning(
+                "player step outside fov, discarding update",
+                player_id=player.id,
+                angle=player.angle,
+                prev_step_angle=previous_step_angle,
+            )
+            return []
 
     # update player angle
     player.angle = message_wrapper.angle

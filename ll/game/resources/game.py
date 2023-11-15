@@ -28,6 +28,7 @@ class GamePlayer:
     step_length: float
     buffs: List[Buff]
     spawned: bool
+    step_fov: float
     angle: float = 0.0
 
 
