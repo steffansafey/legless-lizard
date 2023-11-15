@@ -15,6 +15,7 @@ def setup_game_states(app):
         players=[],
         consumables=[],
         global_buffs=[],
+        map_bounds=[[-1000, -1000], [1000, 1000]],
     )
 
     app["game_states"][1] = game_state

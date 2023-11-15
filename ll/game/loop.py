@@ -30,7 +30,7 @@ def format_gamestate_ws_update(game_state: GameState):
     return json.loads(message.json())
 
 
-def get_connection_by_player_id(app, player_id):
+def get_connection_by_player_id(app, player_id: str):
     for conn in app["connections"]:
         if conn.player_id == player_id:
             return conn
@@ -44,7 +44,7 @@ async def publish_state_to_connected_players(app, game_state):
             await conn.ws.send_json(game_state_msg)
 
 
-def spawn_consumables(game_state):
+def spawn_consumables(game_state: GameState):
     """Ensure there are enough consumables spawned."""
 
     for consumable in CONSUMABLE_DEFINITIONS:
@@ -66,7 +66,14 @@ def spawn_consumables(game_state):
 
             game_state.consumables.append(
                 Consumable(
-                    coordinates=[randint(-1000, 1000), randint(-1000, 1000)],
+                    coordinates=[
+                        randint(
+                            game_state.map_bounds[0][0], game_state.map_bounds[1][0]
+                        ),
+                        randint(
+                            game_state.map_bounds[0][1], game_state.map_bounds[1][1]
+                        ),
+                    ],
                     type=consumable.type,
                     size=int(consumable.size * size_multiplier),
                     color=consumable.color,
@@ -74,7 +81,7 @@ def spawn_consumables(game_state):
             )
 
 
-def remove_disconnected_or_disconnecting_players(app, game_state):
+def remove_disconnected_or_disconnecting_players(app, game_state: GameState):
     """Remove players that are disconnected or disconnecting."""
     for conn in app["connections"]:
         if conn.ws.closed:

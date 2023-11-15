@@ -5,7 +5,7 @@ from pydantic import dataclasses
 from .buffs import Buff
 from .consumables import Consumable
 
-DEFAULT_TICK_PERIOD = 1.5
+DEFAULT_TICK_PERIOD = 1.25
 MINIMUM_STEP_LENGTH = 50
 MIN_CONSUMABLE_COUNT = 50
 
@@ -43,3 +43,4 @@ class GameState:
     players: List[GamePlayer]
     consumables: List[Consumable]
     global_buffs: List[Buff]
+    map_bounds: List[List[float]]
