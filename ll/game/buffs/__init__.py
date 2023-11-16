@@ -13,9 +13,9 @@ def decay_buffs(game_state, application_time: BuffApplicationTime):
             buff.duration_remaining -= 1
 
             # unapply buff if duration is over
-            if buff.duration_remaining <= 0:
+            if buff.duration_remaining < 0:
                 BUFF_UNAPPLY_MAP[buff.type](game_state, player)
-        player.buffs = [b for b in player.buffs if b.duration_remaining > 0]
+        player.buffs = [b for b in player.buffs if b.duration_remaining >= 0]
 
     for buff in game_state.global_buffs:
         if buff.definition.application_time != application_time:
@@ -24,17 +24,19 @@ def decay_buffs(game_state, application_time: BuffApplicationTime):
         buff.duration_remaining -= 1
 
         # unapply buff if duration is over
-        if buff.duration_remaining <= 0:
+        if buff.duration_remaining < 0:
             BUFF_UNAPPLY_MAP[buff.type](game_state, None)
 
     # remove expired buffs
     game_state.global_buffs = [
-        b for b in game_state.global_buffs if b.duration_remaining > 0
+        b for b in game_state.global_buffs if b.duration_remaining >= 0
     ]
 
 
 def apply_and_decay_buffs(game_state, application_time: BuffApplicationTime):
     """Apply and decay buffs."""
+
+    decay_buffs(game_state, application_time)
 
     for player in game_state.players:
         for buff in player.buffs:
@@ -56,5 +58,3 @@ def apply_and_decay_buffs(game_state, application_time: BuffApplicationTime):
         if buff.definition.application_time == application_time:
             BUFF_APPLY_MAP[buff.type](game_state, None)
             buff.is_applied = True
-
-    decay_buffs(game_state, application_time)

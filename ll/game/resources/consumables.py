@@ -110,7 +110,9 @@ class Consumable:
 
         return Buff(
             type=buff_definition.type,
+            friendly_name=buff_definition.friendly_name,
             is_debuff=buff_definition.is_debuff,
             duration_remaining=buff_definition.default_duration,
+            duration=buff_definition.default_duration,
             is_applied=False,
         )

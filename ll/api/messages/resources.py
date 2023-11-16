@@ -2,6 +2,7 @@ from datetime import datetime
 from enum import Enum
 from typing import List, Optional, Union
 
+from ...game.resources.buffs import Buff
 from ...game.resources.game import Consumable, GamePlayer
 from .schema import BasePydanticSchema
 
@@ -38,6 +39,7 @@ class StateUpdate(BasePydanticSchema):
     server_next_tick_time: datetime
     players: List[GamePlayer]
     consumables: List[Consumable]
+    global_buffs: List[Buff]
 
 
 class ClientUpdate(BasePydanticSchema):

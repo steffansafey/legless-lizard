@@ -24,6 +24,7 @@ def format_gamestate_ws_update(game_state: GameState):
             server_next_tick_time=game_state.server_next_tick_time,
             players=game_state.players,
             consumables=game_state.consumables,
+            global_buffs=game_state.global_buffs,
         ),
     )
 
