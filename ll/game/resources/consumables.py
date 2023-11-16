@@ -1,6 +1,7 @@
 import dataclasses
 from enum import Enum
 from typing import Callable, List
+from uuid import uuid4
 
 from .buffs import BUFF_DEFINITIONS, Buff, BuffType
 
@@ -94,6 +95,7 @@ class Consumable:
     size: int
     color: List[int]
     effect_multiplier: float = 1.0
+    uid: str = dataclasses.field(default_factory=lambda: str(uuid4()))
 
     @property
     def definition(self):
