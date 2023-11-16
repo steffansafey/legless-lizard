@@ -28,6 +28,7 @@ class JoinResponse(BasePydanticSchema):
 
     player_id: Optional[str]
     ok: bool
+    reason: Optional[str]
 
 
 class StateUpdate(BasePydanticSchema):

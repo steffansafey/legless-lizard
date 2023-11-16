@@ -56,9 +56,9 @@ async def handle_join_request(request, message_wrapper: JoinRequest):
         None,
     )
     if player:
-        logger.info("player joined", existing_player=True)
-        await assign_player_id_to_ws_connection(app, player.id, request.conn)
-        return [JoinResponse(player_id=player.id, ok=True)]
+        return [
+            JoinResponse(player_id=player.id, ok=False, reason="Name already taken")
+        ]
 
     # create a new player
     player = GamePlayer(
