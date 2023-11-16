@@ -82,7 +82,7 @@ async def handle_join_request(request, message_wrapper: JoinRequest):
     logger.info("player joined", existing_player=False)
     await assign_player_id_to_ws_connection(app, player.id, request.conn)
 
-    return [JoinResponse(player_id=player.id, ok=True)]
+    return [JoinResponse(player_id=player.id, ok=True, reason=None)]
 
 
 def _normalize_angle(angle):
