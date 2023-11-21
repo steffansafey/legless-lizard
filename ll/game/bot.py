@@ -26,6 +26,14 @@ BOT_NAMES_ADJECTIVES = [
     "SIGMA",
     "SHRIGMA",
     "MAGA",
+    "STEEZY",
+    "NO-NUTS",
+    "SWEATY",
+    "FRICKEN",
+    "DANK",
+    "MR. STEAL YO",
+    "DEVILISH",
+    "EVIL",
 ]
 
 BOT_NAMES_NOUNS = [
@@ -45,6 +53,8 @@ BOT_NAMES_NOUNS = [
     "MALE",
     "PEPE",
     "BOZO",
+    "MUNTER",
+    "ANUK",
 ]
 
 

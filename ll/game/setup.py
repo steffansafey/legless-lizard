@@ -1,4 +1,4 @@
-from .resources.game import GameState
+from .resources.game import MAP_SIZE, GameState
 
 
 def setup_game_states(app):
@@ -15,7 +15,10 @@ def setup_game_states(app):
         players=[],
         consumables=[],
         global_buffs=[],
-        map_bounds=[[-1000, -1000], [1000, 1000]],
+        map_bounds=[
+            [-MAP_SIZE, -MAP_SIZE],
+            [MAP_SIZE, MAP_SIZE],
+        ],
     )
 
     app["game_states"][1] = game_state

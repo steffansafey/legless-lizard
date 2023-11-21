@@ -42,7 +42,7 @@ CONSUMABLE_DEFINITIONS = [
         size=10,
         spawn_ratio=0.8,
         player_size_diff=20,
-        size_multiplier_range=[1.0, 4.0],
+        size_multiplier_range=[1.0, 2.0],
         # the effect applied is the inverse of the size (bigger fruit = smaller effect)
         size_effect_multiplier=lambda x: 1 / x,
     ),
@@ -52,7 +52,7 @@ CONSUMABLE_DEFINITIONS = [
         size=10,
         spawn_ratio=0.3,
         player_size_diff=-20,
-        size_multiplier_range=[1, 5.0],
+        size_multiplier_range=[1, 3.0],
         # poison effect is constant regardless of size
         size_effect_multiplier=lambda x: x,
     ),

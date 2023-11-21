@@ -41,6 +41,7 @@ class StateUpdate(BasePydanticSchema):
     players: List[GamePlayer]
     consumables: List[Consumable]
     global_buffs: List[Buff]
+    map_bounds: List[List[float]]
 
 
 class ClientUpdate(BasePydanticSchema):

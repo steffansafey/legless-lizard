@@ -26,6 +26,7 @@ def format_gamestate_ws_update(game_state: GameState):
             players=game_state.players,
             consumables=game_state.consumables,
             global_buffs=game_state.global_buffs,
+            map_bounds=game_state.map_bounds,
         ),
     )
 
