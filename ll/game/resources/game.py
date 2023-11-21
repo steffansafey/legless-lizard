@@ -29,6 +29,7 @@ class GamePlayer:
     buffs: List[Buff]
     spawned: bool
     step_fov: float
+    is_bot: bool
     angle: float = 0.0
 
 

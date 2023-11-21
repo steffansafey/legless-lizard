@@ -1,4 +1,4 @@
-from math import sqrt
+from math import pi, sqrt
 from typing import List, Tuple
 
 EPS = 0.000001
@@ -12,6 +12,15 @@ def point_inside_circle(
 ) -> bool:
     """Check if a point is inside a circle."""
     return _distance(point, center) <= radius + CIRCLE_COLLISION_TOLERANCE
+
+
+def normalize_angle(angle: float) -> float:
+    """
+    Normalize an angle to be within -pi to pi.
+
+    e.g. 3pi -> pi, -3pi -> -pi
+    """
+    return (angle + pi) % (2 * pi) - pi
 
 
 def lines_intersect(

@@ -1,5 +1,6 @@
 import math
-from random import randint
+import uuid
+from random import choices, randint
 
 from structlog import get_logger
 
@@ -26,7 +27,7 @@ def _reset_player(player: GamePlayer):
     player.spawned = False
 
 
-def _check_player_collisions(player: GamePlayer, game_state: GameState):
+def _check_collisions_with_players(player: GamePlayer, game_state: GameState):
     """Test player collisions."""
     # Collisions with other players
     if any([b for b in player.buffs if b.definition.type == BuffType.GHOST]):
@@ -103,7 +104,7 @@ def _take_step(player: GamePlayer, game_state: GameState):
     player.step_length = max(player.step_length * 0.995, MINIMUM_STEP_LENGTH)
 
     # Test collisions
-    _check_player_collisions(player, game_state)
+    _check_collisions_with_players(player, game_state)
     _check_consumable_collisions(player, game_state)
 
 
@@ -111,3 +112,73 @@ def take_player_steps(game_state: GameState):
     """Take a step for each player."""
     for player in game_state.players:
         _take_step(player, game_state)
+
+
+COLOR_PALETTE = [
+    [170, 68, 101],
+    [202, 137, 95],
+    [85, 111, 68],
+    [8, 76, 97],
+    [209, 122, 34],
+    [67, 87, 173],
+    [148, 168, 154],
+    [109, 159, 113],
+    [87, 61, 28],
+]
+
+
+def _get_unassigned_color(game_state: GameState):
+    """Get an unassigned color."""
+    assigned_colors = [p.color for p in game_state.players]
+    available_colors = [c for c in COLOR_PALETTE if c not in assigned_colors]
+    color = choices(available_colors)[0]
+    return color
+
+
+def add_player(game_state: GameState, name: str, is_bot: bool) -> str:
+    """Create a player.
+
+    Returns the player id.
+    """
+    # check if the player already exists (lookup by name)
+    player = next(
+        (p for p in game_state.players if p.name == name),
+        None,
+    )
+    if player:
+        raise ValueError("Name already taken")
+
+    player = GamePlayer(
+        id=str(uuid.uuid4()),
+        name=name,
+        color=_get_unassigned_color(game_state),
+        step_length=MINIMUM_STEP_LENGTH,
+        spawned=False,
+        steps=[
+            PlayerStep(
+                coordinates=[
+                    float(randint(-1000, 1000)),
+                    float(randint(-1000, 1000)),
+                ]
+            )
+        ],
+        step_fov=math.pi * 0.875,
+        is_bot=is_bot,
+        buffs=[],
+    )
+    game_state.players.append(player)
+    logger.info("added player", player_id=player.id)
+    return player.id
+
+
+def kick_player(game_state: GameState, player_id: str):
+    """Remove a player."""
+    player = next(
+        (p for p in game_state.players if p.id == player_id),
+        None,
+    )
+    if player:
+        game_state.players.remove(player)
+        logger.info("removed player", player_name=player.name, is_bot=player.is_bot)
+    else:
+        logger.info("player not found", player_name=player.name)

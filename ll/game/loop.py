@@ -6,6 +6,7 @@ from random import randint, random
 from structlog import get_logger
 
 from ..api.messages.resources import MessageType, MessageWrapper, StateUpdate
+from .bot import choose_bot_step_angles, spawn_and_boot_bots
 from .buffs import BuffApplicationTime, apply_and_decay_buffs
 from .player import take_player_steps
 from .resources.consumables import CONSUMABLE_DEFINITIONS, Consumable
@@ -102,6 +103,7 @@ async def game_loop(app):
         game_state: GameState = app["game_states"][1]
         await asyncio.sleep(game_state.tick_period)
         remove_disconnected_or_disconnecting_players(app, game_state)
+        spawn_and_boot_bots(game_state)
 
         # log the active players
         logger.info("active players", player_names=[p.name for p in game_state.players])
@@ -111,10 +113,9 @@ async def game_loop(app):
         game_state.server_timestamp = datetime.now()
 
         apply_and_decay_buffs(game_state, BuffApplicationTime.PRE_STEP)
-
+        choose_bot_step_angles(game_state)
         take_player_steps(game_state)
         spawn_consumables(game_state)
-
         apply_and_decay_buffs(game_state, BuffApplicationTime.POST_STEP)
 
         # add the tick period to the server timestamp in seconds

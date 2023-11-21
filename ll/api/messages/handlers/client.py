@@ -1,15 +1,10 @@
 import math
-import uuid
-from random import choices, randint
 
 from structlog import get_logger
 
-from ll.game.resources.game import (
-    MINIMUM_STEP_LENGTH,
-    GamePlayer,
-    GameState,
-    PlayerStep,
-)
+from ll.game.intersect import normalize_angle
+from ll.game.player import add_player
+from ll.game.resources.game import GamePlayer, GameState
 
 from ..resources import ClientUpdate, JoinRequest, JoinResponse
 
@@ -27,14 +22,6 @@ COLOR_PALETTE = [
     [109, 159, 113],
     [87, 61, 28],
 ]
-
-
-def get_unassigned_color(app):
-    """Get an unassigned color."""
-    assigned_colors = [p.color for p in app["game_states"][1].players]
-    available_colors = [c for c in COLOR_PALETTE if c not in assigned_colors]
-    color = choices(available_colors)[0]
-    return color
 
 
 async def assign_player_id_to_ws_connection(app, player_id, ws):
@@ -61,37 +48,12 @@ async def handle_join_request(request, message_wrapper: JoinRequest):
         ]
 
     # create a new player
-    player = GamePlayer(
-        id=str(uuid.uuid4()),
-        name=message_wrapper.name,
-        color=get_unassigned_color(app),
-        step_length=MINIMUM_STEP_LENGTH,
-        spawned=False,
-        steps=[
-            PlayerStep(
-                coordinates=[
-                    float(randint(-1000, 1000)),
-                    float(randint(-1000, 1000)),
-                ]
-            )
-        ],
-        step_fov=math.pi * 0.875,
-        buffs=[],
-    )
-    app["game_states"][1].players.append(player)
-    logger.info("player joined", existing_player=False)
-    await assign_player_id_to_ws_connection(app, player.id, request.conn)
+    player_id = add_player(app["game_states"][1], message_wrapper.name, False)
 
-    return [JoinResponse(player_id=player.id, ok=True, reason=None)]
+    logger.info("player joined", player_name=message_wrapper.name)
+    await assign_player_id_to_ws_connection(app, player_id, request.conn)
 
-
-def _normalize_angle(angle):
-    """
-    Normalize an angle to be within -pi to pi.
-
-    e.g. 3pi -> pi, -3pi -> -pi
-    """
-    return (angle + math.pi) % (2 * math.pi) - math.pi
+    return [JoinResponse(player_id=player_id, ok=True, reason=None)]
 
 
 async def handle_client_update(request, message_wrapper: ClientUpdate):
@@ -120,7 +82,7 @@ async def handle_client_update(request, message_wrapper: ClientUpdate):
             last_step[1] - second_last_step[1], last_step[0] - second_last_step[0]
         )
 
-        normalized_angle = _normalize_angle(player.angle - previous_step_angle)
+        normalized_angle = normalize_angle(player.angle - previous_step_angle)
         if normalized_angle > player.step_fov:
             new_angle = previous_step_angle + player.step_fov
         elif normalized_angle < -player.step_fov:
