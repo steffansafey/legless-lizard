@@ -112,22 +112,20 @@ async def handle_client_update(request, message_wrapper: ClientUpdate):
         return []
 
     # validate the player's step is within the fov
+    new_angle = message_wrapper.angle
     if len(player.steps) >= 2:
         last_step = player.steps[-1].coordinates
         second_last_step = player.steps[-2].coordinates
         previous_step_angle = math.atan2(
             last_step[1] - second_last_step[1], last_step[0] - second_last_step[0]
         )
-        angle_diff = abs(_normalize_angle(previous_step_angle - player.angle))
-        if angle_diff > player.step_fov:
-            logger.warning(
-                "player step outside fov, discarding update",
-                player_id=player.id,
-                angle=player.angle,
-                prev_step_angle=previous_step_angle,
-            )
-            return []
+
+        normalized_angle = _normalize_angle(player.angle - previous_step_angle)
+        if normalized_angle > player.step_fov:
+            new_angle = previous_step_angle + player.step_fov
+        elif normalized_angle < -player.step_fov:
+            new_angle = previous_step_angle - player.step_fov
 
     # update player angle
-    player.angle = message_wrapper.angle
+    player.angle = new_angle
     return []
