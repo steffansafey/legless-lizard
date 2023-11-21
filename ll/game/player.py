@@ -7,7 +7,13 @@ from structlog import get_logger
 from .intersect import lines_intersect, point_inside_circle
 from .resources.buffs import BuffType
 from .resources.consumables import ConsumableType
-from .resources.game import MINIMUM_STEP_LENGTH, GamePlayer, GameState, PlayerStep
+from .resources.game import (
+    MAP_SIZE,
+    MINIMUM_STEP_LENGTH,
+    GamePlayer,
+    GameState,
+    PlayerStep,
+)
 
 logger = get_logger(__name__)
 
@@ -17,8 +23,8 @@ def _reset_player(player: GamePlayer):
     player.steps = [
         PlayerStep(
             coordinates=[
-                float(randint(-1000, 1000)),
-                float(randint(-1000, 1000)),
+                float(randint(-MAP_SIZE, MAP_SIZE)),
+                float(randint(-MAP_SIZE, MAP_SIZE)),
             ]
         )
     ]
@@ -90,6 +96,31 @@ def _check_consumable_collisions(player: GamePlayer, game_state: GameState):
             game_state.consumables.remove(consumable)
 
 
+def _check_in_map_bounds(player: GamePlayer, game_state: GameState):
+    """Test if the player is in the map bounds."""
+
+    if len(player.steps) < 2:
+        return
+
+    b = game_state.map_bounds
+    bounds = [
+        [(b[0][0], b[0][1]), (b[0][0], b[1][1])],
+        [(b[1][0], b[0][1]), (b[1][0], b[1][1])],
+        [(b[0][0], b[1][1]), (b[1][0], b[1][1])],
+        [(b[0][0], b[0][1]), (b[1][0], b[0][1])],
+    ]
+
+    for bound in bounds:
+        if lines_intersect(
+            *bound,
+            player.steps[-2].coordinates,
+            player.steps[-1].coordinates,
+        ):
+            logger.info("player out of bounds", player_name=player.name)
+            _reset_player(player)
+            return
+
+
 def _take_step(player: GamePlayer, game_state: GameState):
     x, y = player.steps[-1].coordinates
     dx = math.cos(player.angle) * player.step_length
@@ -106,6 +137,7 @@ def _take_step(player: GamePlayer, game_state: GameState):
     # Test collisions
     _check_collisions_with_players(player, game_state)
     _check_consumable_collisions(player, game_state)
+    _check_in_map_bounds(player, game_state)
 
 
 def take_player_steps(game_state: GameState):
@@ -157,8 +189,8 @@ def add_player(game_state: GameState, name: str, is_bot: bool) -> str:
         steps=[
             PlayerStep(
                 coordinates=[
-                    float(randint(-1000, 1000)),
-                    float(randint(-1000, 1000)),
+                    float(randint(-MAP_SIZE, MAP_SIZE)),
+                    float(randint(-MAP_SIZE, MAP_SIZE)),
                 ]
             )
         ],

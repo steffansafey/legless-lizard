@@ -8,6 +8,7 @@ from .consumables import Consumable
 DEFAULT_TICK_PERIOD = 1.25
 MINIMUM_STEP_LENGTH = 50
 MIN_CONSUMABLE_COUNT = 50
+MAP_SIZE = 2000
 
 
 @dataclasses.dataclass
