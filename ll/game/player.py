@@ -128,11 +128,11 @@ def _take_step(player: GamePlayer, game_state: GameState):
     player.steps.append(PlayerStep(coordinates=[x + dx, y + dy]))
 
     # Limit number of segments
-    max_steps = int(player.step_length**0.6)
+    max_steps = int(player.step_length**0.3 + 7)
     player.steps = player.steps[-max_steps:]
 
     # Decay step length
-    player.step_length = max(player.step_length * 0.995, MINIMUM_STEP_LENGTH)
+    player.step_length = max(player.step_length - 0.2, MINIMUM_STEP_LENGTH)
 
     # Test collisions
     _check_collisions_with_players(player, game_state)
