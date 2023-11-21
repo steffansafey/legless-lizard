@@ -43,6 +43,10 @@ def _check_collisions_with_players(player: GamePlayer, game_state: GameState):
         last_step = (player.steps[-2].coordinates, player.steps[-1].coordinates)
 
         for other_player in game_state.players:
+            if any(
+                [b for b in other_player.buffs if b.definition.type == BuffType.GHOST]
+            ):
+                continue
             for step1, step2 in zip(other_player.steps[:-1], other_player.steps[1:]):
                 other_step = (step1.coordinates, step2.coordinates)
                 if other_player.id == player.id and other_step == last_step:
