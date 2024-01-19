@@ -7,7 +7,7 @@ build-backend = "poetry.masonry.api"
 name = "ll"
 version = "0.0.1"
 description = "description"
-authors = ["Sportsflare <Author@sportsflare.io>"]
+authors = ["Steffan <steffansafey@gmail.com>"]
 
 [[tool.poetry.source]]
 name = 'default'

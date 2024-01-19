@@ -9,7 +9,7 @@ PWD = $(shell pwd)
 include ./secrets.env
 
 # Docker
-IMAGE_NAME = 790542884824.dkr.ecr.us-east-1.amazonaws.com/$(NAME)
+IMAGE_NAME = $(NAME)
 IMAGE_TAG_BASE=base-latest
 IMAGE_TAG_DEV=dev-latest
 IMAGE_TAG_PROD=latest
@@ -32,7 +32,6 @@ build-base:
 	DOCKER_BUILDKIT=1 \
 	docker build \
 	--build-arg BASE_IMAGE=$(IMAGE_NAME):$(IMAGE_TAG_BASE) \
-	--build-arg CODE_ARTIFACT_TOKEN=$(CODE_ARTIFACT_TOKEN) \
 	-t $(IMAGE_NAME):$(IMAGE_TAG_BASE) \
 	-f docker/Dockerfile \
 	--target=base \
@@ -43,7 +42,6 @@ build-dev:
 	DOCKER_BUILDKIT=1 \
 	docker build \
 	--build-arg BASE_IMAGE=$(IMAGE_NAME):$(IMAGE_TAG_BASE) \
-	--build-arg CODE_ARTIFACT_TOKEN=$(CODE_ARTIFACT_TOKEN) \
 	-t $(IMAGE_NAME):$(IMAGE_TAG_DEV) \
 	-f docker/Dockerfile \
 	--target=dev \
@@ -54,7 +52,6 @@ build-prod:
 	DOCKER_BUILDKIT=1 \
 	docker build \
 	--build-arg BASE_IMAGE=$(IMAGE_NAME):$(IMAGE_TAG_BASE) \
-	--build-arg CODE_ARTIFACT_TOKEN=$(CODE_ARTIFACT_TOKEN) \
 	-t $(IMAGE_NAME):$(IMAGE_TAG_PROD) \
 	-f docker/Dockerfile \
 	--target=prod \
@@ -62,11 +59,6 @@ build-prod:
 
 ## Run application in development mode
 run: run-web
-
-# Download launch.json configuration for vscode
-.vscode/launch.json:
-	mkdir -p .vscode
-	curl -s https://gitlab.com/-/snippets/2304427/raw/main/vscode_python_debug_launch_config.json | sed -e 's/REPO_NAME/$(NAME)/g' > .vscode/launch.json
 
 ## Add libraries to pypoetry.toml - make add-libs LIBS="first second@6.2"
 add-libs:

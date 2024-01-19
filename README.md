@@ -1,14 +1,10 @@
 # legless-lizard
 
-description
+The backend for a agar.io-esque snake game. Hacked together over a week for fun, not necessarially caring about code quality.
 
-## Prerequisites
+Has some rudimentary bot behavior so that the game is "always-on".
 
-The following packages are required to develop on this repository
-
-- docker>=19.03
-- make>=3.81
-- git>=2.17
+You'll see the game running in docker logs, but can't play it without the frontend!
 
 
 ## Development
@@ -18,4 +14,10 @@ command.
 
 ```bash
 make
+```
+
+
+## To run the backend
+```
+make build && make run && make logs
 ```
